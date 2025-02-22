@@ -1,7 +1,6 @@
 """PyCWT helper functions."""
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-
 import numpy
 
 # Try to import the Python wrapper for FFTW.
@@ -99,7 +98,7 @@ def ar1(x):
     else:
         raise Warning(
             "Cannot place an upperbound on the unbiased AR(1). "
-            "Series is too short or trend is to large."
+            "Series is too short or trend is too large."
         )
 
     # According to Allen & Smith (1996), footnote 4
