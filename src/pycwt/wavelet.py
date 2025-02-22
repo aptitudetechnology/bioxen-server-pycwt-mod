@@ -27,7 +27,7 @@ def cwt(signal, dt, dj=1 / 12, s0=-1, J=-1, wavelet="morlet", freqs=None):
     J : float, optional
         Number of scales less one. Scales range from s0 up to
         s0 * 2**(J * dj), which gives a total of (J + 1) scales.
-        Default is J = (log2(N * dt / so)) / dj.
+        Default is J = (log2(N * dt / s0)) / dj.
     wavelet : instance of Wavelet class, or string
         Mother wavelet class. Default is Morlet wavelet.
     freqs : numpy.ndarray, optional
