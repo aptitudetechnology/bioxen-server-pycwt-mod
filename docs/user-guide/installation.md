@@ -3,28 +3,28 @@
 You can use PyPI to install this package:
 
 ```commandline
-$  pip install pycwt
+$  pip install pycwt-mod
 ```
 
 To install the most recent development version in Github, run
 
 ```commandline
-$ pip install https://github.com/regeirk/pycwt.git@development
+$ pip install https://github.com/aptitudetechnology/pycwt-mod.git@development
 ```
 
 You can also clone the source code and install
 
 ```commandline
-$ git clone https://github.com/regeirk/pycwt.git
-$ cd pycwt
+$ git clone https://github.com/aptitudetechnology/pycwt-mod.git
+$ cd pycwt-mod
 $ python setup.py install
 ```
 
 or, using pip,
 
 ```commandline
-$ git clone https://github.com/regeirk/pycwt.git
-$ cd pycwt
+$ git clone https://github.com/aptitudetechnology/pycwt-mod.git
+$ cd pycwt-mod
 $ pip install -e .
 ```
 

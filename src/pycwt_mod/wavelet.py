@@ -1,12 +1,12 @@
-"""PyCWT core wavelet transform functions."""
+"""PyCWT-mod core wavelet transform functions."""
 
 import numpy
 from scipy.stats import chi2
 from tqdm import tqdm
 
-from pycwt.helpers import (ar1, ar1_spectrum, fft, fft_kwargs, find,
-                           get_cache_dir, rednoise)
-from pycwt.mothers import DOG, MexicanHat, Morlet, Paul
+from pycwt_mod.helpers import (ar1, ar1_spectrum, fft, fft_kwargs, find,
+                                get_cache_dir, rednoise)
+from pycwt_mod.mothers import DOG, MexicanHat, Morlet, Paul
 
 
 def cwt(signal, dt, dj=1 / 12, s0=-1, J=-1, wavelet="morlet", freqs=None):

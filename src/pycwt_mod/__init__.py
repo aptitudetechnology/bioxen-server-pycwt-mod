@@ -1,4 +1,4 @@
-"""Python module for continuous wavelet spectral analysis.
+"""Modular Python module for continuous wavelet spectral analysis.
 
 This module includes a collection of routines for wavelet transform and
 statistical analysis via FFT algorithm. In addition, the module also
@@ -82,7 +82,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 from pycwt._version_ import __version__, version
-from pycwt.wavelet import *
+from pycwt_mod.wavelet import *
 
 __all__ = [
     "cwt",
@@ -97,4 +97,4 @@ __all__ = [
     "DOG",
     "MexicanHat",
 ]
-__name__ = "PyCWT"
+__name__ = "PyCWT-mod"

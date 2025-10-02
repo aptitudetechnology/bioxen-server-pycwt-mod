@@ -1,6 +1,6 @@
-site_name: 'PyCWT: spectral analysis using wavelets in Python'
-site_url: https://pycwt.readthedocs.io/
-repo_url: https://github.com/regeirk/pycwt
+site_name: 'PyCWT-mod: modular spectral analysis using wavelets in Python'
+site_url: https://pycwt-mod.readthedocs.io/
+repo_url: https://github.com/aptitudetechnology/pycwt-mod
 
 theme:
   name: material  # readthedocs

@@ -1,49 +1,49 @@
 # Time-series spectral analysis using wavelets
 
-In this tutorial, we will walk through each step in order to use `pycwt' to perform the wavelet analysis of a given time-series.
+In this tutorial, we will walk through each step in order to use `pycwt_mod' to perform the wavelet analysis of a given time-series.
 
 In this example we will follow the approach suggested by Torrence and Compo (1998)[^1], using the NINO3 sea surface temperature anomaly dataset between 1871 and 1996. This and other sample data files are kindly provided by C. Torrence and G. Compo [here](http://paos.colorado.edu/research/wavelets/software.html).
 
-We begin by importing the relevant libraries. Please make sure that PyCWT is properly installed in your system.
+We begin by importing the relevant libraries. Please make sure that PyCWT-mod is properly installed in your system.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:10:15"
+--8<-- "docs/tutorial/simple_sample.py:10:15"
 ```
 
 Then, we load the dataset and define some data related parameters. In this case, the first 19 lines of the data file contain meta-data, that we ignore, since we set them manually (*i.e.* title, units).
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:20:26"
+--8<-- "docs/tutorial/simple_sample.py:20:26"
 ```
 
 We also create a time array in years.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:28:29"
+--8<-- "docs/tutorial/simple_sample.py:28:29"
 ```
 
 We write the following code to detrend and normalize the input data by its standard deviation. Sometimes detrending is not necessary and simply removing the mean value is good enough. However, if your dataset has a well defined trend, such as the Mauna Loa CO<sub>2</sub> dataset available in the above mentioned website, it is strongly advised to perform detrending. Here, we fit a one-degree polynomial function and then subtract it from the original data.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:38:42"
+--8<-- "docs/tutorial/simple_sample.py:38:42"
 ```
 
 The next step is to define some parameters of our wavelet analysis. We select the mother wavelet, in this case the Morlet wavelet with $\omega_0=6$.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:47:51"
+--8<-- "docs/tutorial/simple_sample.py:47:51"
 ```
 
 The following routines perform the wavelet transform and inverse wavelet transform using the parameters defined above. Since we have normalized our input time-series, we multiply the inverse transform by the standard deviation.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:57:58"
+--8<-- "docs/tutorial/simple_sample.py:57:58"
 ```
 
 We calculate the normalized wavelet and Fourier power spectra, as well as the Fourier equivalent periods for each wavelet scale.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:62:65"
+--8<-- "docs/tutorial/simple_sample.py:62:65"
 ```
 
 Optionally, we could also rectify the power spectrum according to the suggestions proposed by Liu et al. (2007)[^2]
@@ -55,25 +55,25 @@ power /= scales[:, None]
 We could stop at this point and plot our results. However we are also interested in the power spectra significance test. The power is significant where the ratio ``power / sig95 > 1``.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:69:73"
+--8<-- "docs/tutorial/simple_sample.py:69:73"
 ```
 
 Then, we calculate the global wavelet spectrum and determine its significance level.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:77:82"
+--8<-- "docs/tutorial/simple_sample.py:77:82"
 ```
 
 We also calculate the scale average between 2 years and 8 years, and its significance level.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:86:99"
+--8<-- "docs/tutorial/simple_sample.py:86:99"
 ```
 
 Finally, we plot our results in four different subplots containing the (i) original series anomaly and the inverse wavelet transform; (ii) the wavelet power spectrum (iii) the global wavelet and Fourier spectra ; and (iv) the range averaged wavelet spectrum. In all sub-plots the significance levels are either included as dotted lines or as filled contour lines.
 
 ```python
---8<-- "src/pycwt/sample/simple_sample.py:107:188"
+--8<-- "docs/tutorial/simple_sample.py:107:188"
 ```
 
 Running this sequence of commands you should be able to generate the following figure:

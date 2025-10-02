@@ -26,8 +26,8 @@ import numpy
 from dataset import Dataset
 from matplotlib import pyplot
 
-import pycwt as wavelet
-from pycwt.helpers import find
+import pycwt_mod as wavelet
+from pycwt_mod.helpers import find
 
 # Here we use the dataset class to load the data. Valid datasets are either
 # NINO3, MAUNA, MONSOON, SUNSPOTS or SOI. If your `matplotlib` allows LaTeX

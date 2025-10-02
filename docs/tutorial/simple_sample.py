@@ -5,13 +5,13 @@ C. Torrence and G. Compo at
 <http://paos.colorado.edu/research/wavelets/software.html>.
 
 """
-# We begin by importing the relevant libraries. Please make sure that PyCWT is
+# We begin by importing the relevant libraries. Please make sure that PyCWT-mod is
 # properly installed in your system.
 import numpy
 from matplotlib import pyplot
 
-import pycwt as wavelet
-from pycwt.helpers import find
+import pycwt_mod as wavelet
+from pycwt_mod.helpers import find
 
 # Then, we load the dataset and define some data related parameters. In this
 # case, the first 19 lines of the data file contain meta-data, that we ignore,

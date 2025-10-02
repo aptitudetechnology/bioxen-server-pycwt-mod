@@ -27,8 +27,8 @@ import matplotlib.pyplot as plt
 import numpy
 from matplotlib.image import NonUniformImage
 
-import pycwt as wavelet
-from pycwt.helpers import find
+import pycwt_mod as wavelet
+from pycwt_mod.helpers import find
 
 data1 = dict(name="Arctic Oscillation", nick="AO", file="jao.dat")
 data2 = dict(name="Baltic Sea ice extent", nick="BMI", file="jbaltic.dat")

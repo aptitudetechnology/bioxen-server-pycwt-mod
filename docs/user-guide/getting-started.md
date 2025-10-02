@@ -2,9 +2,9 @@
 
 This guide illustrates how to use this package to perform continuous wavelet spectral analysis. We base our examples on the analysis presented by Torrence and Compo (1998)[^1] and we assume that you have a good understanding of the key concepts.
 
-Please refer to the [installation instructions](./installation.md) for installing `pycwt`.
+Please refer to the [installation instructions](./installation.md) for installing `pycwt_mod`.
 
-The `pycwt` package contains a collection of routines for wavelet transform and statistical analysis via the Fast Fourier Transform (FFT) algorithm, as well as cross-wavelet transforms and wavelet coherence tests.
+The `pycwt_mod` package contains a collection of routines for wavelet transform and statistical analysis via the Fast Fourier Transform (FFT) algorithm, as well as cross-wavelet transforms and wavelet coherence tests.
 
 [^1]: Torrence, C. and Compo, G. P.. A Practical Guide to Wavelet Analysis. Bulletin of the American Meteorological Society, *American Meteorological Society*, **1998**, 79, 61-78. DOI [10.1175/1520-0477(1998)079<0061:APGTWA>2.0.CO;2](http://dx.doi.org/10.1175/1520-0477(1998)079%3C0061:APGTWA%3E2.0.CO;2).
 
@@ -12,10 +12,10 @@ The `pycwt` package contains a collection of routines for wavelet transform and 
 ## Basic wavelet analysis
 
 ```python
-import pycwt
-nino3 = pycwt.load_dataset("sst_nino3")  # Load sample time-series.
-wavelet = pycwt.Morlet(w0=6)             # Instantiate mother wavelet.
-result = wavelet.run(nino3)              # Run wavelet analysis.
+import pycwt_mod
+nino3 = pycwt_mod.load_dataset("sst_nino3")  # Load sample time-series.
+wavelet = pycwt_mod.Morlet(w0=6)             # Instantiate mother wavelet.
+result = wavelet.run(nino3)                  # Run wavelet analysis.
 result.plot()
 ```
 

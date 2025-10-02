@@ -1,4 +1,4 @@
-"""PyCWT helper functions."""
+"""PyCWT-mod helper functions."""
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import numpy
@@ -238,7 +238,7 @@ def boxpdf(x):
 def get_cache_dir():
     """Returns the location of the cache directory."""
     # Sets cache directory according to user home path.
-    cache_dir = "{}/.cache/pycwt/".format(expanduser("~"))
+    cache_dir = "{}/.cache/pycwt_mod/".format(expanduser("~"))
     # Creates cache directory if not existant.
     if not exists(cache_dir):
         makedirs(cache_dir)
