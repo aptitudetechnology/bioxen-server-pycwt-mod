@@ -81,7 +81,12 @@ References
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-from pycwt._version_ import __version__, version
+try:
+    from pycwt_mod._version_ import __version__, version
+except ImportError:
+    __version__ = "0.0.001"
+    version = __version__
+
 from pycwt_mod.wavelet import *
 
 __all__ = [

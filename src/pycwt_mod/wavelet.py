@@ -7,6 +7,7 @@ from tqdm import tqdm
 from pycwt_mod.helpers import (ar1, ar1_spectrum, fft, fft_kwargs, find,
                                 get_cache_dir, rednoise)
 from pycwt_mod.mothers import DOG, MexicanHat, Morlet, Paul
+from pycwt_mod.backends import get_backend, get_recommended_backend
 
 
 def cwt(signal, dt, dj=1 / 12, s0=-1, J=-1, wavelet="morlet", freqs=None):
@@ -576,6 +577,80 @@ def wct(
     return WCT, aWCT, coi, freq, sig
 
 
+def _wct_significance_worker(seed, al1, al2, N, dt, dj, s0, J, wavelet, 
+                             sj, scales, outsidecoi, maxscale, nbins):
+    """
+    Worker function for WCT significance Monte Carlo simulation.
+    
+    This function performs a single Monte Carlo simulation for wavelet
+    coherence significance testing. It's designed to be used with the
+    backend system for parallel execution.
+    
+    Parameters
+    ----------
+    seed : int
+        Random seed for this simulation
+    al1, al2 : float
+        Lag-1 autoregressive coefficients
+    N : int
+        Length of noise signals
+    dt : float
+        Sample spacing
+    dj : float
+        Spacing between discrete scales
+    s0 : float
+        Smallest scale
+    J : float
+        Number of scales less one
+    wavelet : wavelet instance
+        Mother wavelet
+    sj : ndarray
+        Scales array
+    scales : ndarray
+        Scales grid
+    outsidecoi : ndarray
+        Boolean array for cone of influence
+    maxscale : int
+        Maximum scale index to process
+    nbins : int
+        Number of histogram bins
+        
+    Returns
+    -------
+    wlc_simulation : ndarray
+        Coherence coefficient histogram for this simulation (J+1 x nbins)
+    """
+    # Set random seed for this simulation
+    numpy.random.seed(seed)
+    
+    # Initialize result array
+    wlc_simulation = numpy.zeros([J + 1, nbins])
+    
+    # Generate two red-noise signals
+    noise1 = rednoise(N, al1, 1)
+    noise2 = rednoise(N, al2, 1)
+    
+    # Calculate cross wavelet transform
+    kwargs = dict(dt=dt, dj=dj, s0=s0, J=J, wavelet=wavelet)
+    nW1, _, _, _, _, _ = cwt(noise1, **kwargs)
+    nW2, _, _, _, _, _ = cwt(noise2, **kwargs)
+    nW12 = nW1 * nW2.conj()
+    
+    # Smooth and calculate coherence
+    S1 = wavelet.smooth(numpy.abs(nW1) ** 2 / scales, dt, dj, sj)
+    S2 = wavelet.smooth(numpy.abs(nW2) ** 2 / scales, dt, dj, sj)
+    S12 = wavelet.smooth(nW12 / scales, dt, dj, sj)
+    R2 = numpy.ma.array(numpy.abs(S12) ** 2 / (S1 * S2), mask=~outsidecoi)
+    
+    # Build coherence coefficient histogram for this simulation
+    for s in range(maxscale):
+        cd = numpy.floor(R2[s, :] * nbins)
+        for j, t in enumerate(cd[~cd.mask]):
+            wlc_simulation[s, int(t)] += 1
+    
+    return wlc_simulation
+
+
 def wct_significance(
     al1,
     al2,
@@ -588,11 +663,13 @@ def wct_significance(
     mc_count=300,
     progress=True,
     cache=True,
+    backend=None,
+    n_jobs=None,
 ):
     """Wavelet coherence transform significance.
 
     Calculates WCT significance using Monte Carlo simulations with
-    95% confidence.
+    configurable confidence level (default 95%).
 
     Parameters
     ----------
@@ -612,18 +689,54 @@ def wct_significance(
         Default is J = (log2(N*dt/so))/dj.
     significance_level : float, optional
         Significance level to use. Default is 0.95.
-    wavelet : instance of a wavelet class, optional
-        Mother wavelet class. Default is Morlet wavelet.
+    wavelet : instance of a wavelet class or string, optional
+        Mother wavelet class. Default is 'morlet'.
     mc_count : integer, optional
         Number of Monte Carlo simulations. Default is 300.
     progress : bool, optional
-        If `True` (default), shows progress bar on screen.
+        If `True` (default), shows progress information.
+        Note: Progress display differs between backends.
     cache : bool, optional
         If `True` (default) saves cache to file.
+    backend : str, optional
+        Backend to use for Monte Carlo simulations. Options:
+        - None (default): Auto-select based on workload
+        - 'sequential': Single-process execution
+        - 'joblib': Parallel multi-core execution
+        If None, automatically selects best available backend.
+    n_jobs : int, optional
+        Number of parallel jobs (only for joblib backend).
+        -1 uses all available CPUs. Default is None (uses backend default).
 
     Returns
     -------
-    TODO
+    sig95 : ndarray
+        Significance levels at each scale.
+
+    Notes
+    -----
+    The backend system provides flexible execution strategies:
+    
+    - **Sequential**: Always available, good for small mc_count or debugging
+    - **Joblib**: Requires `pip install joblib`, good for mc_count > 100
+    
+    For large numbers of simulations (mc_count > 500), parallel backends
+    can provide significant speedups on multi-core systems.
+
+    Examples
+    --------
+    Basic usage with default (auto-selected) backend:
+    
+    >>> sig = wct_significance(al1, al2, dt, dj, s0, J)
+    
+    Force sequential execution:
+    
+    >>> sig = wct_significance(al1, al2, dt, dj, s0, J, backend='sequential')
+    
+    Use parallel execution with all CPUs:
+    
+    >>> sig = wct_significance(al1, al2, dt, dj, s0, J, 
+    ...                        backend='joblib', n_jobs=-1)
 
     """
 
@@ -661,30 +774,30 @@ def wct_significance(
     sig95[outsidecoi.any(axis=1)] = numpy.nan
 
     nbins = 1000
+    
+    # Determine backend to use for Monte Carlo simulations
+    if backend is None:
+        backend = get_recommended_backend(n_simulations=mc_count)
+    backend_instance = get_backend(backend)
+    
+    # Prepare arguments for worker function
+    worker_args = (al1, al2, N, dt, dj, s0, J, wavelet, sj, scales, 
+                   outsidecoi, maxscale, nbins)
+    
+    # Run Monte Carlo simulations using the backend system
+    results = backend_instance.run_monte_carlo(
+        _wct_significance_worker,
+        n_simulations=mc_count,
+        worker_args=worker_args,
+        seed=None,  # Uses backend's default seed generation
+        verbose=progress,
+        n_jobs=n_jobs
+    )
+    
+    # Aggregate results from all simulations
     wlc = numpy.ma.zeros([J + 1, nbins])
-    # Displays progress bar with tqdm
-    for _ in tqdm(range(mc_count), disable=not progress):
-        # Generates two red-noise signals with lag-1 autoregressive
-        # coefficients given by al1 and al2
-        noise1 = rednoise(N, al1, 1)
-        noise2 = rednoise(N, al2, 1)
-        # Calculate the cross wavelet transform of both red-noise signals
-        kwargs = dict(dt=dt, dj=dj, s0=s0, J=J, wavelet=wavelet)
-        nW1, sj, freq, coi, _, _ = cwt(noise1, **kwargs)
-        nW2, sj, freq, coi, _, _ = cwt(noise2, **kwargs)
-        nW12 = nW1 * nW2.conj()
-        # Smooth wavelet wavelet transforms and calculate wavelet coherence
-        # between both signals.
-        S1 = wavelet.smooth(numpy.abs(nW1) ** 2 / scales, dt, dj, sj)
-        S2 = wavelet.smooth(numpy.abs(nW2) ** 2 / scales, dt, dj, sj)
-        S12 = wavelet.smooth(nW12 / scales, dt, dj, sj)
-        R2 = numpy.ma.array(numpy.abs(S12) ** 2 / (S1 * S2), mask=~outsidecoi)
-        # Walks through each scale outside the cone of influence and builds a
-        # coherence coefficient counter.
-        for s in range(maxscale):
-            cd = numpy.floor(R2[s, :] * nbins)
-            for j, t in enumerate(cd[~cd.mask]):
-                wlc[s, int(t)] += 1
+    for wlc_simulation in results:
+        wlc += wlc_simulation
 
     # After many, many, many Monte Carlo simulations, determine the
     # significance using the coherence coefficient counter percentile.
@@ -706,14 +819,8 @@ def wct_significance(
 
 def _check_parameter_wavelet(wavelet):
     mothers = {"morlet": Morlet, "paul": Paul, "dog": DOG, "mexicanhat": MexicanHat}
-    # Checks if input parameter is a string. For backwards
-    # compatibility with Python 2 we check either if instance is a
-    # `basestring` or a `str`.
-    try:
-        if isinstance(wavelet, basestring):
-            return mothers[wavelet]()
-    except NameError:
-        if isinstance(wavelet, str):
-            return mothers[wavelet]()
+    # Checks if input parameter is a string.
+    if isinstance(wavelet, str):
+        return mothers[wavelet]()
     # Otherwise, return itself.
     return wavelet
