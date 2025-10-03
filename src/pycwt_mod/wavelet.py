@@ -740,6 +740,8 @@ def wct_significance(
 
     """
 
+    wavelet = _check_parameter_wavelet(wavelet)
+
     if cache:
         # Load cache if previously calculated. It is assumed that wavelet
         # analysis is performed using the wavelet's default parameters.
