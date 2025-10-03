@@ -1,6 +1,6 @@
 # PyCWT REST API Specification
 
-**Version:** 1.0.0  
+**Version:** 0.1.0-alpha  
 **Base URL:** `http://localhost:8000`  
 **Protocol:** HTTP/HTTPS  
 **Content-Type:** `application/json`
@@ -51,7 +51,7 @@ Get API information and available endpoints.
 ```json
 {
   "name": "PyCWT REST API",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha",
   "docs": "/docs",
   "health": "/health"
 }
@@ -76,7 +76,7 @@ Check API server health status.
 ```json
 {
   "status": "healthy",
-  "api_version": "1.0.0"
+  "api_version": "0.1.0-alpha"
 }
 ```
 
@@ -760,7 +760,7 @@ For production deployment:
 
 ## Changelog
 
-### Version 1.0.0 (Current)
+### Version 0.1.0-alpha (Current)
 
 - ✅ Backend management endpoints
 - ✅ Health check and status endpoints
