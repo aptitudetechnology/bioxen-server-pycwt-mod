@@ -17,6 +17,7 @@ tqdm>=4.65,<5
 # Optional backend dependencies
 joblib>=1.3.0  # For joblib backend
 dask[distributed]>=2023.1.0  # For dask backend
+pyserial>=3.5  # For ELM11 FPGA accelerator
 
 # Development and testing
 pytest==7.4.3
