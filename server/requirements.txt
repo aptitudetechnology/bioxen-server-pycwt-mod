@@ -22,3 +22,4 @@ dask[distributed]>=2023.1.0  # For dask backend
 pytest==7.4.3
 pytest-asyncio==0.21.1
 httpx==0.25.1
+requests==2.31.0  # For test client
