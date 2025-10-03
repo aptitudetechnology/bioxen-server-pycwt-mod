@@ -75,16 +75,33 @@ else:
 print_header("Step 3: Check FFT Code Availability")
 print_test("Checking if fourier/fourier_main.lua exists...")
 
-if os.path.exists('fourier/fourier_main.lua'):
-    print_success("FFT Lua code found")
-    with open('fourier/fourier_main.lua', 'r') as f:
-        fft_code = f.read()
+# Try multiple paths
+fft_code_paths = [
+    'fourier/fourier_main.lua',
+    'ELM11-Lua-FFT/fourier/fourier_main.lua',
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ELM11-Lua-FFT', 'fourier', 'fourier_main.lua')
+]
+
+fft_code = None
+fft_code_path = None
+
+for path in fft_code_paths:
+    if os.path.exists(path):
+        fft_code_path = path
+        with open(path, 'r') as f:
+            fft_code = f.read()
+        break
+
+if fft_code:
+    print_success(f"FFT Lua code found at: {fft_code_path}")
     print_info(f"Code size: {len(fft_code)} bytes")
 else:
-    print_error("FFT Lua code not found")
-    print_info("Make sure you're running from the ELM11-Lua-FFT directory")
-    ser.close()
-    sys.exit(1)
+    print_error("FFT Lua code not found in any expected location")
+    print_info("Tried:")
+    for path in fft_code_paths:
+        print_info(f"  - {path}")
+    print_info("\nContinuing with basic tests only...")
+    fft_code = ""  # Continue without FFT code
 
 # Test 3: Load basic FFT function
 print_header("Step 4: Test Basic Math Operations")
@@ -191,30 +208,35 @@ print(response)
 
 # Test 6: Load full FFT code
 print_header("Step 7: Load Full FFT Code")
-print_test("Loading fourier_main.lua onto ELM11...")
-print_info("This may take a moment for large code files...")
 
-# Split into smaller chunks for reliability
-chunk_size = 512
-for i in range(0, len(fft_code), chunk_size):
-    chunk = fft_code[i:i+chunk_size]
-    ser.write(chunk.encode())
+if fft_code and len(fft_code) > 0:
+    print_test("Loading fourier_main.lua onto ELM11...")
+    print_info("This may take a moment for large code files...")
+
+    # Split into smaller chunks for reliability
+    chunk_size = 512
+    for i in range(0, len(fft_code), chunk_size):
+        chunk = fft_code[i:i+chunk_size]
+        ser.write(chunk.encode())
+        ser.flush()
+        time.sleep(0.2)
+
+    ser.write(b'\r\n')
     ser.flush()
-    time.sleep(0.2)
+    time.sleep(2)
 
-ser.write(b'\r\n')
-ser.flush()
-time.sleep(2)
+    response = ser.read(4096).decode(errors='replace')
 
-response = ser.read(4096).decode(errors='replace')
-
-if 'error' in response.lower() or 'syntax' in response.lower():
-    print_error("Error loading FFT code")
-    print_info(f"Response: {response[:500]}")
+    if 'error' in response.lower() or 'syntax' in response.lower():
+        print_error("Error loading FFT code")
+        print_info(f"Response: {response[:500]}")
+    else:
+        print_success("FFT code loaded (or no errors reported)")
+        if response.strip():
+            print_info(f"Response preview: {response[:200]}")
 else:
-    print_success("FFT code loaded (or no errors reported)")
-    if response.strip():
-        print_info(f"Response preview: {response[:200]}")
+    print_info("Skipping FFT code load (code not found)")
+    print_info("Basic Lua operations still work on ELM11")
 
 # Test 7: Performance benchmark
 print_header("Step 8: Performance Benchmark")
