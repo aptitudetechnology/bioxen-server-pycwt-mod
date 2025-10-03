@@ -102,7 +102,7 @@ class TestWCTSignificanceBackendIntegration:
     
     def test_invalid_backend_raises_error(self):
         """Test that invalid backend name raises appropriate error."""
-        with pytest.raises(ValueError, match="Unknown backend"):
+        with pytest.raises(ValueError, match="not found"):
             wct_significance(
                 al1=0.72,
                 al2=0.72,

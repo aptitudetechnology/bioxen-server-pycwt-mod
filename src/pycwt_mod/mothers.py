@@ -165,6 +165,52 @@ class Paul(object):
             self.gamma = -1
             self.deltaj0 = -1
 
+    def smooth(self, W, dt, dj, scales):
+        """Smoothing function used in coherence analysis.
+
+        Parameters
+        ----------
+        W :
+        dt :
+        dj :
+        scales :
+
+        Returns
+        -------
+        T :
+
+        """
+        # The smoothing is performed by using a filter given by the absolute
+        # value of the wavelet function at each scale, normalized to have a
+        # total weight of unity, according to suggestions by Torrence &
+        # Webster (1999) and by Grinsted et al. (2004).
+        m, n = W.shape
+
+        # Filter in time.
+        k = 2 * numpy.pi * fft.fftfreq(fft_kwargs(W[0, :])["n"])
+        k2 = k**2
+        snorm = scales / dt
+        # Smoothing by Gaussian window (absolute value of wavelet function)
+        # using the convolution theorem: multiplication by Gaussian curve in
+        # Fourier domain for each scale, outer product of scale and frequency
+        F = numpy.exp(-0.5 * (snorm[:, numpy.newaxis] ** 2) * k2)  # Outer product
+        smooth = fft.ifft(
+            F * fft.fft(W, axis=1, **fft_kwargs(W[0, :])),
+            axis=1,  # Along Fourier frequencies
+            **fft_kwargs(W[0, :], overwrite_x=True),
+        )
+        T = smooth[:, :n]  # Remove possibly padded region due to FFT
+
+        if numpy.isreal(W).all():
+            T = T.real
+
+        # Filter in scale. For the Paul wavelet it's a boxcar window.
+        wsize = self.deltaj0 / dj * 2
+        win = rect(int(numpy.round(wsize)), normalize=True)
+        T = convolve2d(T, win[:, numpy.newaxis], "same")  # Scales are "vertical"
+
+        return T
+
 
 class DOG(object):
     """Implements the derivative of a Guassian wavelet class.
@@ -240,6 +286,52 @@ class DOG(object):
             self.cdelta = -1
             self.gamma = -1
             self.deltaj0 = -1
+
+    def smooth(self, W, dt, dj, scales):
+        """Smoothing function used in coherence analysis.
+
+        Parameters
+        ----------
+        W :
+        dt :
+        dj :
+        scales :
+
+        Returns
+        -------
+        T :
+
+        """
+        # The smoothing is performed by using a filter given by the absolute
+        # value of the wavelet function at each scale, normalized to have a
+        # total weight of unity, according to suggestions by Torrence &
+        # Webster (1999) and by Grinsted et al. (2004).
+        m, n = W.shape
+
+        # Filter in time.
+        k = 2 * numpy.pi * fft.fftfreq(fft_kwargs(W[0, :])["n"])
+        k2 = k**2
+        snorm = scales / dt
+        # Smoothing by Gaussian window (absolute value of wavelet function)
+        # using the convolution theorem: multiplication by Gaussian curve in
+        # Fourier domain for each scale, outer product of scale and frequency
+        F = numpy.exp(-0.5 * (snorm[:, numpy.newaxis] ** 2) * k2)  # Outer product
+        smooth = fft.ifft(
+            F * fft.fft(W, axis=1, **fft_kwargs(W[0, :])),
+            axis=1,  # Along Fourier frequencies
+            **fft_kwargs(W[0, :], overwrite_x=True),
+        )
+        T = smooth[:, :n]  # Remove possibly padded region due to FFT
+
+        if numpy.isreal(W).all():
+            T = T.real
+
+        # Filter in scale. For the DOG wavelet it's a boxcar window.
+        wsize = self.deltaj0 / dj * 2
+        win = rect(int(numpy.round(wsize)), normalize=True)
+        T = convolve2d(T, win[:, numpy.newaxis], "same")  # Scales are "vertical"
+
+        return T
 
 
 class MexicanHat(DOG):
