@@ -623,6 +623,9 @@ def _wct_significance_worker(seed, al1, al2, N, dt, dj, s0, J, wavelet,
     # Set random seed for this simulation
     numpy.random.seed(seed)
     
+    # Ensure wavelet is an object, not a string
+    wavelet = _check_parameter_wavelet(wavelet)
+    
     # Initialize result array
     wlc_simulation = numpy.zeros([J + 1, nbins])
     
