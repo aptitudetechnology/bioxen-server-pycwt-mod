@@ -117,26 +117,32 @@ $ python3 test-tang-nano-9k.py
 
 [1/6] Checking for USB serial devices...
 ✓ Found 2 USB serial device(s):
-  - /dev/ttyUSB2
-    Description: USB Serial Port
-    Manufacturer: Gowin
-  - /dev/ttyUSB3
-    Description: USB Serial Port
-    Manufacturer: Gowin
+  - /dev/ttyUSB0
+    Description: JTAG Debugger - JTAG Debugger
+    Manufacturer: SIPEED
+  - /dev/ttyUSB1
+    Description: JTAG Debugger
+    Manufacturer: SIPEED
 
 [2/6] Checking for pyserial library...
 ✓ pyserial is installed (version 3.5)
 
 [3/6] Looking for Tang Nano 9K devices...
 ✓ Found Tang Nano 9K device:
-  Device: /dev/ttyUSB2
-  Description: USB Serial Port (Gowin)
+  Device: /dev/ttyUSB0
+  Description: JTAG Debugger - JTAG Debugger
+  Manufacturer: SIPEED
+✓ Found Tang Nano 9K device:
+  Device: /dev/ttyUSB1
+  Description: JTAG Debugger
+  Manufacturer: SIPEED
 
 [4/6] Attempting to connect to devices...
-  Trying /dev/ttyUSB2...
-    Baud rate: 115200... ✓ Response received
-      Device: /dev/ttyUSB2
-      Baud: 115200
+  Trying /dev/ttyUSB0...
+    Baud rate: 115200... No response
+    Baud rate: 9600... ✓ Response received
+      Device: /dev/ttyUSB0
+      Baud: 9600
       ✓ Interactive interface detected!
 
 [5/6] Checking for FPGA backend integration...
@@ -157,10 +163,10 @@ $ python3 test-tang-nano-9k.py
 Summary
 ============================================================
 ✓ USB devices detected: 2
-✓ Tang Nano 9K devices found: 1
+✓ Tang Nano 9K devices found: 2
 ✓ Device communication successful
-  Device: /dev/ttyUSB2
-  Baudrate: 115200
+  Device: /dev/ttyUSB0
+  Baudrate: 9600
 ✓ FPGA backend fully operational
 ```
 
@@ -205,6 +211,8 @@ The backend automatically detects Tang Nano 9K devices using these keywords:
 - `'tangnano'`
 - `'gowin'` (FPGA manufacturer)
 - `'fpga'`
+- `'sipeed'` (manufacturer of Tang Nano boards)
+- `'jtag debugger'` (onboard JTAG interface)
 
 ### Common Serial Ports
 

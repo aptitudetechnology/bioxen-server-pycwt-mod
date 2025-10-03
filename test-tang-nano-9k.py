@@ -64,16 +64,21 @@ except ImportError:
 
 # Step 3: Look for Tang Nano 9K specific devices
 print_section("3/6] Looking for Tang Nano 9K devices...")
-tang_nano_keywords = ['tang nano', 'tangnano', 'gowin', 'fpga']
+tang_nano_keywords = ['tang nano', 'tangnano', 'gowin', 'fpga', 'sipeed', 'jtag debugger']
 tang_nano_devices = []
 
 for port in ports:
     desc_lower = port.description.lower()
-    if any(keyword in desc_lower for keyword in tang_nano_keywords):
+    mfr_lower = (port.manufacturer or '').lower()
+    # Check both description and manufacturer
+    if any(keyword in desc_lower for keyword in tang_nano_keywords) or \
+       any(keyword in mfr_lower for keyword in tang_nano_keywords):
         tang_nano_devices.append(port)
         print(f"{GREEN}✓ Found Tang Nano 9K device:{NC}")
         print(f"  Device: {port.device}")
         print(f"  Description: {port.description}")
+        if port.manufacturer:
+            print(f"  Manufacturer: {port.manufacturer}")
 
 if not tang_nano_devices:
     print(f"{YELLOW}⚠ No Tang Nano 9K devices found by description{NC}")
