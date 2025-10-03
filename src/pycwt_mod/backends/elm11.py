@@ -92,28 +92,37 @@ class ELM11Backend(MonteCarloBackend):
                 # Look for common ELM11 identifiers
                 ports = []
                 for port in serial.tools.list_ports.comports():
-                    if any(keyword in port.description.lower() for keyword in 
-                          ['elm11', 'fpga', 'microcontroller', 'lua', 'tang nano', 'tangnano', 'gowin']):
+                    desc_lower = port.description.lower()
+                    mfr_lower = (port.manufacturer or '').lower()
+                    # Check both description and manufacturer
+                    if any(keyword in desc_lower for keyword in 
+                          ['elm11', 'fpga', 'microcontroller', 'lua', 'tang nano', 'tangnano', 'gowin', 'jtag debugger']) or \
+                       any(keyword in mfr_lower for keyword in ['sipeed', 'gowin']):
                         ports.append(port.device)
                 
                 # If no specific ports found, try common ports
                 if not ports:
-                    ports = ['/dev/ttyACM0', '/dev/ttyACM1', 'COM3', 'COM4']
+                    ports = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyACM0', '/dev/ttyACM1', 'COM3', 'COM4']
             
             # Try to connect to each port
             for port in ports:
-                try:
-                    ser = serial.Serial(port, self.baudrate, timeout=1)
-                    # Try to communicate
-                    ser.write(b'print("ELM11_READY")\n')
-                    response = ser.read(100)
-                    ser.close()
-                    
-                    if b'ELM11_READY' in response:
-                        self.port = port
-                        return True
-                except:
-                    continue
+                # Try multiple baud rates
+                for baudrate in [self.baudrate, 9600, 115200, 19200, 38400, 57600]:
+                    try:
+                        ser = serial.Serial(port, baudrate, timeout=1)
+                        # Try to communicate
+                        ser.write(b'\n')  # Send newline
+                        ser.flush()
+                        response = ser.read(100)
+                        ser.close()
+                        
+                        # Check for interactive interface markers
+                        if response and any(marker in response for marker in [b'$', b'>', b'#', b'OK', b'Command']):
+                            self.port = port
+                            self.baudrate = baudrate
+                            return True
+                    except:
+                        continue
             
             return False
             
