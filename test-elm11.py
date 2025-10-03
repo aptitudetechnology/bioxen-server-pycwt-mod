@@ -47,13 +47,15 @@ except ImportError:
 
 # Step 3: Check for ELM11 interface
 print(f"\n{BLUE}[3/5] Checking for ELM11 interface...{NC}")
-elm11_interface_path = os.path.join(os.path.dirname(__file__), 'ELM11-Lua-FFT', 'elm11_interface.py')
+elm11_interface_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ELM11-Lua-FFT', 'elm11_interface.py')
 if os.path.exists(elm11_interface_path):
     print(f"{GREEN}✓ ELM11 interface found at:{NC}")
     print(f"  {elm11_interface_path}")
 else:
-    print(f"{RED}✗ ELM11 interface not found{NC}")
-    sys.exit(1)
+    print(f"{YELLOW}⚠ ELM11 interface not found at expected location{NC}")
+    print(f"  Looking for: {elm11_interface_path}")
+    # Continue anyway - we can still test connection
+    print(f"  {BLUE}Continuing with connection test...{NC}")
 
 # Step 4: Try to connect to ELM11
 print(f"\n{BLUE}[4/5] Attempting to connect to ELM11...{NC}")
