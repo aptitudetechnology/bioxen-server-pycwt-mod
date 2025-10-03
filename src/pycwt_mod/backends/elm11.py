@@ -93,7 +93,7 @@ class ELM11Backend(MonteCarloBackend):
                 ports = []
                 for port in serial.tools.list_ports.comports():
                     if any(keyword in port.description.lower() for keyword in 
-                          ['elm11', 'fpga', 'microcontroller', 'lua']):
+                          ['elm11', 'fpga', 'microcontroller', 'lua', 'tang nano', 'tangnano', 'gowin']):
                         ports.append(port.device)
                 
                 # If no specific ports found, try common ports

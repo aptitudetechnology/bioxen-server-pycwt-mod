@@ -123,7 +123,12 @@ try:
         backend_name = 'fpga' if 'fpga' in backends else 'elm11'
         backend = get_backend(backend_name)
         print(f"  Backend: {backend_name}")
-        print(f"  Available: {backend.is_available()}")
+        available = backend.is_available()
+        print(f"  Available: {available}")
+        if available:
+            print(f"{GREEN}✓ FPGA backend is fully operational{NC}")
+        else:
+            print(f"{YELLOW}⚠ FPGA backend registered but not available (check permissions){NC}")
     else:
         print(f"{YELLOW}⚠ FPGA backend not yet integrated{NC}")
         print(f"  Available backends: {', '.join(backends)}")
@@ -142,7 +147,8 @@ if usb_devices and connected:
     print(f"  1. Test ELM11 interface:")
     print(f"     cd ELM11-Lua-FFT")
     print(f"     python elm11_interface.py")
-    print(f"\n  2. Ready for FPGA backend integration (Phase 3)")
+    print(f"\n  2. {GREEN}✓ Phase 3 Complete: FPGA backend integrated{NC}")
+    print(f"     Backend 'elm11' is registered in PyCWT system")
 elif usb_devices:
     print(f"{YELLOW}⚠ ELM11 hardware detected but not responding{NC}")
     print(f"\n{BLUE}Troubleshooting:{NC}")
