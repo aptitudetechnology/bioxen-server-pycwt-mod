@@ -47,6 +47,7 @@ from .sequential import SequentialBackend
 from .joblib import JoblibBackend
 from .dask import DaskBackend
 from .gpu import GPUBackend
+from .elm11 import ELM11Backend
 
 
 # Auto-register built-in backends
@@ -56,6 +57,7 @@ def _register_builtin_backends():
     BackendRegistry.register('joblib', JoblibBackend)
     BackendRegistry.register('dask', DaskBackend)
     BackendRegistry.register('gpu', GPUBackend)
+    BackendRegistry.register('elm11', ELM11Backend)
     
     # Set default backend to sequential (always available)
     BackendRegistry.set_default('sequential')
@@ -74,6 +76,7 @@ __all__ = [
     'JoblibBackend',
     'DaskBackend',
     'GPUBackend',
+    'ELM11Backend',
     
     # Registry
     'BackendRegistry',
