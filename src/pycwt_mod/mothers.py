@@ -5,7 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 import numpy
 from scipy.signal import convolve2d
 from scipy.special import gamma
-from scipy.special.orthogonal import hermitenorm
+from scipy.special import hermitenorm
 
 from .helpers import fft, fft_kwargs, rect
 

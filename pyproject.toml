@@ -48,3 +48,8 @@ write_to = "src/pycwt_mod/_version_.py"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
