@@ -1,0 +1,159 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║              PyCWT REST API - Quick Reference                 ║
+║                   (Remote Server / SSH)                       ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+CURRENT STATUS:
+═══════════════════════════════════════════════════════════════
+✓ Diagnostics passed
+✓ All dependencies installed
+✓ 2 backends available (sequential, joblib)
+✓ Ready for testing!
+
+TESTING OPTIONS:
+═══════════════════════════════════════════════════════════════
+
+Option 1: Automated Test (EASIEST)
+───────────────────────────────────────────────────────────────
+  source .venv/bin/activate
+  bash test-remote.sh
+
+  → Starts server, runs all tests, shows results, stops server
+
+Option 2: Manual with curl
+───────────────────────────────────────────────────────────────
+  Terminal 1:
+    source .venv/bin/activate
+    python -m server.main
+  
+  Terminal 2:
+    source .venv/bin/activate
+    bash test-curl.sh
+
+Option 3: Python Test Client
+───────────────────────────────────────────────────────────────
+  Terminal 1:
+    source .venv/bin/activate
+    python -m server.main
+  
+  Terminal 2:
+    source .venv/bin/activate
+    python test-server.py
+
+Option 4: Using tmux (Recommended for SSH)
+───────────────────────────────────────────────────────────────
+  # Start tmux session
+  tmux new -s pycwt
+  source .venv/bin/activate
+  python -m server.main
+  
+  # Detach: Press Ctrl+B, then D
+  
+  # Run tests in main terminal
+  source .venv/bin/activate
+  python test-server.py
+  
+  # Reattach to see server logs
+  tmux attach -t pycwt
+  
+  # Kill session when done
+  tmux kill-session -t pycwt
+
+QUICK MANUAL TESTS:
+═══════════════════════════════════════════════════════════════
+
+Health Check:
+  curl http://localhost:8000/health
+
+List Backends:
+  curl http://localhost:8000/api/v1/backends/
+
+Backend Details:
+  curl http://localhost:8000/api/v1/backends/sequential
+
+Pretty Print (requires jq):
+  curl http://localhost:8000/api/v1/backends/ | jq
+
+USEFUL COMMANDS:
+═══════════════════════════════════════════════════════════════
+
+Check if server is running:
+  ps aux | grep "server.main"
+  lsof -i :8000
+
+View server logs (if using nohup):
+  tail -f server.log
+
+Stop server:
+  pkill -f "python -m server.main"
+
+Run diagnostics:
+  python diagnose-server.py
+
+Run pytest:
+  pytest server/tests/test_phase1.py -v
+
+EXPECTED RESULTS:
+═══════════════════════════════════════════════════════════════
+
+✓ Health check returns: {"status":"healthy","api_version":"1.0.0"}
+✓ Backends list shows: sequential, joblib (+ dask/gpu if installed)
+✓ All test-server.py tests pass
+✓ Response times < 50ms
+
+SSH PORT FORWARDING (for browser access):
+═══════════════════════════════════════════════════════════════
+
+From your local machine:
+  ssh -L 8000:localhost:8000 user@remote-server
+
+Then start server on remote and visit on local:
+  http://localhost:8000/docs
+
+TROUBLESHOOTING:
+═══════════════════════════════════════════════════════════════
+
+"Connection refused":
+  → Server not started. Check: ps aux | grep server.main
+
+"Port already in use":
+  → Kill existing: pkill -f "python -m server.main"
+
+"Module not found":
+  → Activate venv: source .venv/bin/activate
+
+Import errors:
+  → Run diagnostics: python diagnose-server.py
+
+DOCUMENTATION:
+═══════════════════════════════════════════════════════════════
+
+REMOTE-TESTING.md     - Complete remote testing guide
+PHASE1-COMPLETE.md    - Implementation summary
+server/TESTING.md     - Comprehensive testing guide
+server/TESTING-QUICK.md - Quick reference
+SETUP.md              - Setup instructions
+
+RECOMMENDED WORKFLOW:
+═══════════════════════════════════════════════════════════════
+
+1. Run automated test first:
+   bash test-remote.sh
+
+2. If all tests pass → Phase 1 complete! 🎉
+
+3. For manual exploration:
+   - Use tmux to run server
+   - Use curl or test-server.py in another terminal
+
+4. When done:
+   pkill -f "python -m server.main"
+
+═══════════════════════════════════════════════════════════════
+
+READY? Run this now:
+  bash test-remote.sh
+
+═══════════════════════════════════════════════════════════════

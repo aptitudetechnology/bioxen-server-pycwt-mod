@@ -129,36 +129,59 @@ Use this to verify Phase 1 is complete:
 
 ## 🚀 How to Test
 
-### Step 1: Install Dependencies
+### For Remote Server / SSH Access
+
+**Quick Automated Test** (Recommended):
 ```bash
 cd /home/chris/pycwt-mod
-pip install -r server/requirements.txt
+source .venv/bin/activate
+bash test-remote.sh
 ```
 
-### Step 2: Run Diagnostics
-```bash
-python diagnose-server.py
-```
+This will:
+- Start server in background
+- Run all tests automatically
+- Stop server when done
+- Show results
 
-### Step 3: Start Server
+**Manual Testing with curl**:
 ```bash
+# Terminal 1: Start server
+source .venv/bin/activate
 python -m server.main
+
+# Terminal 2: Run tests
+source .venv/bin/activate
+bash test-curl.sh
+# or
+python test-server.py
 ```
 
-### Step 4: Manual Testing
+**Using tmux for persistent session**:
 ```bash
-# In a new terminal
-curl http://localhost:8000/health
-curl http://localhost:8000/api/v1/backends/
+# Start server in tmux
+tmux new -s pycwt
+source .venv/bin/activate
+python -m server.main
+
+# Detach: Ctrl+B, then D
+# Run tests in main terminal
+source .venv/bin/activate
+python test-server.py
+
+# Reattach to see logs
+tmux attach -t pycwt
 ```
 
-### Step 5: Interactive Testing
-Open browser to: http://localhost:8000/docs
+### For Local Development
 
-### Step 6: Automated Tests
+**Interactive Testing** (requires SSH port forwarding):
 ```bash
-pytest server/tests/test_phase1.py -v
+# On local machine: ssh -L 8000:localhost:8000 user@server
+# Then open: http://localhost:8000/docs
 ```
+
+**See REMOTE-TESTING.md** for complete remote testing guide.
 
 ## 🐛 Known Issues & Notes
 
