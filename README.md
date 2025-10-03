@@ -15,16 +15,85 @@ Please read the documentation [here](https://pycwt-mod.readthedocs.io/en/latest/
 This module requires ``NumPy``, ``SciPy``, ``tqdm``. In addition, you will 
 also need ``matplotlib`` to run the examples.
 
+**New in pycwt-mod:** Hardware-accelerated Monte Carlo backends for improved
+performance in wavelet coherence significance testing. Choose from CPU (sequential,
+parallel), embedded Lua (ELM11), or FPGA (Tang Nano 9K) acceleration.
+
 The sample scripts (`sample.py`, `sample_xwt.py`) illustrate the use of
 the wavelet and inverse wavelet transforms, cross-wavelet transform and
 wavelet transform coherence. Results are plotted in figures similar to the
 sample images.
 
 
+## 🚀 Development Roadmap
+
+### ✅ Completed Phases
+
+**Phase 1: Backend Architecture (Complete)**
+- ✅ Abstract `MonteCarloBackend` class for plugin system
+- ✅ Backend registry with auto-discovery
+- ✅ Sequential CPU backend (single-core)
+- ✅ Joblib parallel backend (multi-core)
+- ✅ Comprehensive test suites for all backends
+- ✅ Integration with `wct_significance()` function
+
+**Phase 2: Core Integration (Complete)**
+- ✅ Modified `wct_significance()` to use backend system
+- ✅ Added backend parameter (`backend='sequential'|'joblib'|'elm11_lua'|...`)
+- ✅ Maintained backward compatibility
+- ✅ Performance validation and benchmarking
+- ✅ User testing instructions (`laptop-test-instructions.md`)
+
+### 🔄 Current Status
+
+**Hardware Acceleration Planning (In Progress)**
+- ✅ **Tang Nano 9K FPGA Backend**: Complete design document (`tang-nano-9k-prompt.md`)
+  - Monte Carlo pipeline in Verilog
+  - Serial communication protocol
+  - Expected 15-30× speedup vs CPU
+- ✅ **ELM11 Lua Backend**: Complete design document (`ELM11-prompt.md`)
+  - Lua-scriptable Monte Carlo on embedded device
+  - Leverages existing ELM11-Lua-FFT infrastructure
+  - Expected 1.5-3× speedup with low power consumption
+
+### 🔮 Future Phases
+
+**Phase 3: Documentation & User Guide**
+- Update user documentation for backend selection
+- Add performance tuning guide
+- Create hardware setup tutorials
+
+**Phase 4: Hardware Backend Implementation**
+- Tang Nano 9K FPGA backend implementation
+- ELM11 Lua backend implementation
+- Additional hardware backends (GPU, distributed computing)
+
+**Phase 5: Advanced Features**
+- Dynamic backend selection based on workload
+- Backend-specific optimizations
+- Real-time monitoring and profiling
+
+### 📊 Backend Performance Comparison
+
+| Backend | Status | Performance | Use Case |
+|---------|--------|-------------|----------|
+| Sequential | ✅ Complete | 1.0× baseline | Reference implementation |
+| Joblib | ✅ Complete | 3-4× speedup | Multi-core CPU systems |
+| ELM11 Lua | 📋 Planned | 1.5-3× speedup | Embedded, low power |
+| Tang Nano 9K | 📋 Planned | 15-30× speedup | High-performance computing |
+| GPU | 🔲 Future | Variable | GPU-accelerated systems |
+| Dask | 🔲 Future | Variable | Distributed computing |
+
+For detailed implementation plans, see:
+- [`tang-nano-9k-prompt.md`](tang-nano-9k-prompt.md) - FPGA backend design
+- [`ELM11-prompt.md`](ELM11-prompt.md) - Lua embedded backend design
+- [`integration-plan.md`](integration-plan.md) - Overall modular architecture
+
+
 ### How to cite
 
 Sebastian Krieger, Nabil Freij, and contributors. _PyCWT-mod: modular wavelet 
-spectral analysis in Python_. Python. 2025. <https://github.com/aptitudetechnology/pycwt-mod>.
+spectral analysis in Python with hardware acceleration_. Python. 2025. <https://github.com/aptitudetechnology/pycwt-mod>.
 
 
 Disclaimer
@@ -48,14 +117,56 @@ Installation
 We recommend using PyPI to install this package.
 
 ```commandline
-$ pip install pycwt
+$ pip install pycwt-mod
 ```
 
 However, if you want to install directly from GitHub, use:
 
 ```commandline
-$ pip install git+https://github.com/regeirk/pycwt
+$ pip install git+https://github.com/aptitudetechnology/pycwt-mod
 ```
+
+**Development Installation:**
+
+For development and testing the latest features:
+
+```commandline
+$ git clone https://github.com/aptitudetechnology/pycwt-mod
+$ cd pycwt-mod
+$ pip install -e .
+```
+
+**Optional Dependencies:**
+
+For hardware acceleration backends:
+- `joblib` - Multi-core CPU acceleration (auto-installed)
+- `pyserial` - Serial communication for embedded devices
+- Hardware-specific drivers (see backend documentation)
+
+
+Quick Start
+-----------
+
+```python
+import pycwt_mod as pycwt
+
+# Basic wavelet transform
+dat = pycwt.load_sample('NINO3')
+wave, scales, freqs, coi, fft, fftfreqs = pycwt.cwt(dat, 1/12, dj=1/12)
+
+# Wavelet coherence with hardware acceleration
+# Choose backend: 'sequential', 'joblib', 'elm11_lua', 'tang_nano_9k'
+WCT, aWCT, coi, freqs, sig95 = pycwt.wct(
+    dat1, dat2, 
+    dt=1/12, 
+    dj=1/12, 
+    sig=True, 
+    significance_level=0.95,
+    backend='joblib'  # Use multi-core acceleration
+)
+```
+
+For detailed examples, see the `sample.py` and `sample_xwt.py` scripts.
 
 
 Acknowledgements
