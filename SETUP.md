@@ -1,8 +1,30 @@
-# Manual Setup Instructions
+# PyCWT REST API - Setup Guide
 
-Follow these steps to set up the PyCWT REST API development environment:
+Complete guide to setting up the PyCWT REST API development environment.
 
-## Prerequisites
+## Quick Setup (Recommended)
+
+### Option 1: One-Command Setup
+```bash
+sudo apt install python3-venv  # If not already installed
+bash quick-setup.sh
+```
+
+This will:
+- Create virtual environment
+- Install all dependencies (FastAPI, numpy, scipy, etc.)
+- Create configuration file
+- Run diagnostics
+
+### Option 2: Manual Setup
+
+Follow the steps below if you prefer manual control.
+
+---
+
+## Manual Setup Instructions
+
+### Prerequisites
 
 Install python3-venv if not already installed:
 ```bash

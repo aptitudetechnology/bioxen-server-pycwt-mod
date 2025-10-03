@@ -58,10 +58,10 @@ References
 1. Torrence, C. and Compo, G. P.. A Practical Guide to Wavelet
    Analysis. Bulletin of the American Meteorological Society, *American
    Meteorological Society*, **1998**, 79, 61-78.
-   http://dx.doi.org/10.1175/1520-0477(1998)079\<0061:APGTWA\>2.0.CO;2>
+   http://dx.doi.org/10.1175/1520-0477(1998)079<0061:APGTWA>2.0.CO;2>
 2. Torrence, C. and Webster, P. J.. Interdecadal changes in the
    ENSO-Monsoon system, *Journal of Climate*, **1999**, 12(8),
-   2679-2690. http://dx.doi.org/10.1175/1520-0442(1999)012\<2679:ICITEM\>2.0.CO;2>
+   2679-2690. http://dx.doi.org/10.1175/1520-0442(1999)012<2679:ICITEM>2.0.CO;2>
 3. Grinsted, A.; Moore, J. C. & Jevrejeva, S. Application of the cross
    wavelet transform and wavelet coherence to geophysical time series.
    *Nonlinear Processes in Geophysics*, **2004**, 11, 561-566.
