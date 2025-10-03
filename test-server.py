@@ -240,6 +240,13 @@ def run_performance_test(endpoint: str = "/health", requests_count: int = 100):
 
 def main():
     """Run all tests."""
+    # Add src directory to Python path
+    from pathlib import Path
+    project_root = Path(__file__).parent
+    src_path = project_root / "src"
+    if src_path.exists():
+        sys.path.insert(0, str(src_path))
+    
     print(f"{BLUE}")
     print("╔════════════════════════════════════════════════════════════╗")
     print("║         PyCWT REST API - Test Client                      ║")

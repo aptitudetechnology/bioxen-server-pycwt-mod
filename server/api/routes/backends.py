@@ -1,5 +1,14 @@
 """Backend discovery and information endpoints."""
 
+import sys
+from pathlib import Path
+
+# Add src directory to Python path for pycwt_mod imports
+project_root = Path(__file__).parent.parent.parent.parent
+src_path = project_root / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 from fastapi import APIRouter, HTTPException
 from pycwt_mod.backends import list_backends, get_backend
 

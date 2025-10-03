@@ -195,6 +195,12 @@ def print_summary(results):
 
 def main():
     """Run all diagnostic checks."""
+    # Add src directory to Python path
+    project_root = Path(__file__).parent
+    src_path = project_root / "src"
+    if src_path.exists():
+        sys.path.insert(0, str(src_path))
+    
     print(f"{BLUE}")
     print("╔════════════════════════════════════════════════════════════╗")
     print("║       PyCWT REST API Server - Diagnostic Tool             ║")
