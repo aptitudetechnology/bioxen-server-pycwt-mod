@@ -77,8 +77,10 @@ print_test("Checking if fourier/fourier_main.lua exists...")
 
 # Try multiple paths
 fft_code_paths = [
+    'server/elm11/fourier_main.lua',
     'fourier/fourier_main.lua',
     'ELM11-Lua-FFT/fourier/fourier_main.lua',
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'server', 'elm11', 'fourier_main.lua'),
     os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ELM11-Lua-FFT', 'fourier', 'fourier_main.lua')
 ]
 
