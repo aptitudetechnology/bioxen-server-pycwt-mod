@@ -12,7 +12,7 @@ if src_path.exists() and str(src_path) not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from server.api.routes import backends
+from server.api.routes import backends, wavelet
 from server.core.config import Settings
 
 # Initialize settings
@@ -41,6 +41,12 @@ app.include_router(
     backends.router,
     prefix="/api/v1/backends",
     tags=["backends"]
+)
+
+app.include_router(
+    wavelet.router,
+    prefix="/api/v1/wavelet",
+    tags=["wavelet"]
 )
 
 
