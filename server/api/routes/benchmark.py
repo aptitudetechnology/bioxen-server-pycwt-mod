@@ -78,8 +78,9 @@ def run_backend_benchmark(
                     error=f"Backend '{backend_name}' is not available on this system"
                 )
         except Exception as e:
+            # Backend doesn't exist - report as "failed" (not just unavailable)
             return BackendBenchmarkResult(
-                status="unavailable",
+                status="failed",
                 error=f"Backend '{backend_name}' not found: {str(e)}"
             )
         
