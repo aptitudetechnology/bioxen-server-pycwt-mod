@@ -219,8 +219,8 @@ async def cross_wavelet_transform(request: XWTRequest):
         
         return XWTResponse(
             xwt=xwt_list,
-            WXamp=WXamp.tolist(),
-            WXangle=WXangle.tolist(),
+            amplitude=WXamp.tolist(),
+            phase=WXangle.tolist(),
             coi=coi.tolist(),
             freqs=freqs.tolist(),
             scales=scales,

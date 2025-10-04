@@ -125,8 +125,8 @@ class XWTResponse(BaseModel):
     """Response model for Cross Wavelet Transform."""
     
     xwt: List[List[List[float]]] = Field(..., description="Cross wavelet coefficients [real, imag]")
-    WXamp: List[List[float]] = Field(..., description="Cross wavelet amplitude")
-    WXangle: List[List[float]] = Field(..., description="Cross wavelet phase angles")
+    amplitude: List[List[float]] = Field(..., description="Cross wavelet amplitude")
+    phase: List[List[float]] = Field(..., description="Cross wavelet phase angles")
     coi: List[float] = Field(..., description="Cone of influence")
     freqs: List[float] = Field(..., description="Wavelet frequencies")
     scales: List[float] = Field(..., description="Wavelet scales")
