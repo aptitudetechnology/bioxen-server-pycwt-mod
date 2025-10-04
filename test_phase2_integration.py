@@ -19,10 +19,15 @@ print("=" * 70)
 
 # List available backends
 print("\nAvailable backends:")
+from pycwt_mod.backends import get_backend
 backends = list_backends()
-for backend_name, backend_class in backends.items():
-    available = "✓" if backend_class.is_available() else "✗"
-    print(f"  {available} {backend_name}: {backend_class.__name__}")
+for backend_name in backends:
+    try:
+        backend = get_backend(backend_name)
+        available = "✓" if backend.is_available() else "✗"
+        print(f"  {available} {backend_name}: {type(backend).__name__}")
+    except Exception as e:
+        print(f"  ✗ {backend_name}: Error - {e}")
 
 # Test parameters
 print("\nTest parameters:")
@@ -78,7 +83,7 @@ except Exception as e:
     traceback.print_exc()
 
 # Test 3: Joblib backend (if available)
-if 'joblib' in backends and backends['joblib'].is_available():
+if 'joblib' in backends:
     print("\n" + "-" * 70)
     print("Test 3: Joblib backend with n_jobs=2")
     print("-" * 70)

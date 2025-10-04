@@ -22,7 +22,7 @@ settings = Settings()
 app = FastAPI(
     title="PyCWT REST API",
     description="REST API for continuous wavelet transform analysis",
-    version="0.1.0-alpha",
+    version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -49,7 +49,7 @@ async def root():
     """Root endpoint with API information."""
     return {
         "name": "PyCWT REST API",
-        "version": "0.1.0-alpha",
+        "version": "1.0.0",
         "docs": "/docs",
         "health": "/health"
     }
@@ -64,7 +64,7 @@ async def health_check():
     """
     return {
         "status": "healthy",
-        "api_version": "0.1.0-alpha"
+        "api_version": "1.0.0"
     }
 
 
