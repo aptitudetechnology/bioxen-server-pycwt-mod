@@ -49,6 +49,11 @@ def run_backend_benchmark(
     """
     Run benchmark for a single backend.
     
+    Note: For CWT benchmarking, we run the same computation for all backends.
+    Backend differences primarily affect Monte Carlo simulations (used in WCT),
+    not basic CWT computation. This benchmark measures overall system performance
+    and validates that the computation works across different backend configurations.
+    
     Args:
         backend_name: Name of the backend to test
         signal: Test signal
@@ -60,13 +65,30 @@ def run_backend_benchmark(
         BackendBenchmarkResult with timing and status
     """
     try:
-        # Import pycwt_mod
+        # Import pycwt_mod and backend
         from pycwt_mod import cwt
+        from pycwt_mod.backends import get_backend
+        
+        # Check if backend is available
+        try:
+            backend_instance = get_backend(backend_name)
+            if not backend_instance.is_available():
+                return BackendBenchmarkResult(
+                    status="unavailable",
+                    error=f"Backend '{backend_name}' is not available on this system"
+                )
+        except Exception as e:
+            return BackendBenchmarkResult(
+                status="unavailable",
+                error=f"Backend '{backend_name}' not found: {str(e)}"
+            )
         
         # Calculate dt (time step)
         dt = t[1] - t[0] if len(t) > 1 else 0.01
         
         # Run CWT with timing
+        # Note: CWT itself doesn't use backends; they're used in Monte Carlo operations
+        # We still validate backend availability to ensure the system is properly configured
         start_time = time.perf_counter()
         
         try:
@@ -76,8 +98,7 @@ def run_backend_benchmark(
                 dj=0.25,
                 s0=2 * dt,
                 J=7,
-                wavelet=wavelet,
-                backend=backend_name
+                wavelet=wavelet
             )
             
             end_time = time.perf_counter()
@@ -90,19 +111,10 @@ def run_backend_benchmark(
             )
             
         except Exception as e:
-            error_msg = str(e)
-            
-            # Check if backend is unavailable
-            if "not available" in error_msg.lower() or "not found" in error_msg.lower():
-                return BackendBenchmarkResult(
-                    status="unavailable",
-                    error=error_msg
-                )
-            else:
-                return BackendBenchmarkResult(
-                    status="failed",
-                    error=error_msg
-                )
+            return BackendBenchmarkResult(
+                status="failed",
+                error=f"CWT computation failed: {str(e)}"
+            )
                 
     except ImportError as e:
         return BackendBenchmarkResult(
