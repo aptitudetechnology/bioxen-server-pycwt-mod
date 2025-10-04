@@ -191,7 +191,8 @@ async def cross_wavelet_transform(request: XWTRequest):
             )
         
         # Perform XWT
-        result = xwt(
+        # xwt() returns: (W12, coi, freq, signif)
+        W12, coi, freqs, signif = xwt(
             signal1,
             signal2,
             dt=request.dt,
@@ -201,15 +202,16 @@ async def cross_wavelet_transform(request: XWTRequest):
             wavelet=request.mother
         )
         
-        # Unpack results
-        xwt_result, WXamp, WXangle, coi, freqs = result[:5]
-        
         computation_time = time.time() - start_time
+        
+        # Calculate amplitude and phase from complex W12
+        WXamp = np.abs(W12)
+        WXangle = np.angle(W12)
         
         # Convert complex XWT array to lists of [real, imag] pairs
         xwt_list = [
             [[float(val.real), float(val.imag)] for val in row]
-            for row in xwt_result
+            for row in W12
         ]
         
         # Get scales from freqs

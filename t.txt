@@ -16,11 +16,11 @@ client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts
 =================================== FAILURES ===================================
 ____________ TestWaveletCoherence.test_wct_different_mc_counts[10] _____________
 
-self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aea10>
-test_client = <httpx.Client object at 0x752ade3af0d0>, api_base_url = '/api/v1'
-sample_signal_pair = (array([ 2.94867717e-01,  4.88260247e-01,  1.14462787e-01,  5.70220494e-01,
-        4.29949884e-01,  5.28670574e-01,  ...275e-01,  4.25834232e-01, -7.87846310e-02,
-        2.98558424e-01,  6.32089079e-01,  4.34627876e-01,  3.80251627e-01]))
+self = <test_wavelet.TestWaveletCoherence object at 0x7f6e53dd6950>
+test_client = <httpx.Client object at 0x7f6e53dd6fe0>, api_base_url = '/api/v1'
+sample_signal_pair = (array([ 2.51919233e-01,  1.57523995e-01,  4.23383200e-01,  6.28958556e-01,
+        2.32688646e-01,  6.06740696e-01,  ...690e-01,  5.40515327e-02,  3.57597639e-01,
+        3.56462484e-01,  1.42395523e-01,  4.83651297e-01,  5.97779010e-01]))
 mc_count = 10
 
     @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
@@ -48,11 +48,11 @@ E        +  where 500 = <Response [500 Internal Server Error]>.status_code
 client-tests/test_wavelet.py:255: AssertionError
 ____________ TestWaveletCoherence.test_wct_different_mc_counts[50] _____________
 
-self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aead0>
-test_client = <httpx.Client object at 0x752ade1cb9d0>, api_base_url = '/api/v1'
-sample_signal_pair = (array([-0.03069786,  0.07719642,  0.19493153,  0.45681364,  0.32548061,
-        0.59346737,  0.94829535,  0.88160154,...78202, -0.22995188, -0.24945396, -0.1341492 ,
-        0.118939  ,  0.00421547,  0.67332882,  0.9304533 ,  1.03778031]))
+self = <test_wavelet.TestWaveletCoherence object at 0x7f6e53dd6a10>
+test_client = <httpx.Client object at 0x7f6e53bf38b0>, api_base_url = '/api/v1'
+sample_signal_pair = (array([-0.10473571,  0.15279356,  0.45093926,  0.42017094,  0.6803327 ,
+        0.87024577,  0.96402167,  0.63001127,...72586, -0.14301221, -0.07075647, -0.0294101 ,
+       -0.18937029,  0.65227967,  0.21663095,  0.43132284,  1.0126247 ]))
 mc_count = 50
 
     @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
@@ -80,11 +80,11 @@ E        +  where 500 = <Response [500 Internal Server Error]>.status_code
 client-tests/test_wavelet.py:255: AssertionError
 ____________ TestWaveletCoherence.test_wct_different_mc_counts[100] ____________
 
-self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aed10>
-test_client = <httpx.Client object at 0x752ade15a080>, api_base_url = '/api/v1'
-sample_signal_pair = (array([ 0.17229197, -0.16664005,  0.2423597 ,  0.65305319,  0.33783405,
-        0.79230511,  0.51936963,  1.09264608,...482e-02, -2.16653230e-01,  3.18796478e-02,
-        5.26332833e-01,  4.92478637e-01,  5.08129812e-01,  5.25117692e-01]))
+self = <test_wavelet.TestWaveletCoherence object at 0x7f6e53dd6c50>
+test_client = <httpx.Client object at 0x7f6e53be97b0>, api_base_url = '/api/v1'
+sample_signal_pair = (array([ 0.01514838, -0.29074132,  0.02303713,  0.56819776,  0.98678847,
+        0.46723441,  0.56894287,  0.73044552,...456e-01, -2.31080772e-01,  1.25005773e-01,
+        1.59547700e-01,  3.20896229e-01,  5.13989508e-01,  4.40604534e-01]))
 mc_count = 100
 
     @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
@@ -112,11 +112,11 @@ E        +  where 500 = <Response [500 Internal Server Error]>.status_code
 client-tests/test_wavelet.py:255: AssertionError
 ____________ TestWaveletCoherence.test_wct_different_mc_counts[300] ____________
 
-self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aedd0>
-test_client = <httpx.Client object at 0x752ade1c0490>, api_base_url = '/api/v1'
-sample_signal_pair = (array([-0.2418125 , -0.08824293,  0.15734537,  0.51558271,  0.45043123,
-        0.96801555,  0.26986455,  1.00698429,...576e-01,  6.24120267e-02,  1.10698069e-01,
-        1.72342196e-01,  6.73912926e-02,  5.19159020e-01,  4.51903337e-01]))
+self = <test_wavelet.TestWaveletCoherence object at 0x7f6e53dd6d10>
+test_client = <httpx.Client object at 0x7f6e53921bd0>, api_base_url = '/api/v1'
+sample_signal_pair = (array([ 7.02467463e-02,  5.43537681e-01,  5.86937630e-01,  3.66892233e-01,
+        4.20175026e-01,  7.89252300e-01,  ...375e-02,  1.15436681e-01,  1.74114052e-01,
+        4.06086548e-01,  8.67396194e-02,  4.45289872e-01,  8.40532813e-01]))
 mc_count = 300
 
     @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
@@ -147,4 +147,4 @@ FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc
 FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[50]
 FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[100]
 FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[300]
-============================== 4 failed in 1.25s ===============================
+============================== 4 failed in 1.28s ===============================
