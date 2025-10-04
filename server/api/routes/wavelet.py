@@ -47,8 +47,7 @@ async def continuous_wavelet_transform(request: CWTRequest):
             dj=request.dj if request.dj else 1/12,
             s0=request.s0 if request.s0 and request.s0 > 0 else -1,
             J=request.J if request.J and request.J > 0 else -1,
-            wavelet=request.mother,
-            p=request.param if request.param and request.param > 0 else -1
+            wavelet=request.mother
         )
         
         computation_time = time.time() - start_time
@@ -110,8 +109,7 @@ async def wavelet_coherence_transform(request: WCTRequest):
             dj=request.dj if request.dj else 1/12,
             s0=request.s0 if request.s0 and request.s0 > 0 else -1,
             J=request.J if request.J and request.J > 0 else -1,
-            mother=request.mother,
-            param=request.param if request.param and request.param > 0 else -1
+            wavelet=request.mother
         )
         
         # Compute significance if requested
@@ -196,8 +194,7 @@ async def cross_wavelet_transform(request: XWTRequest):
             dj=request.dj if request.dj else 1/12,
             s0=request.s0 if request.s0 and request.s0 > 0 else -1,
             J=request.J if request.J and request.J > 0 else -1,
-            mother=request.mother,
-            param=request.param if request.param and request.param > 0 else -1
+            wavelet=request.mother
         )
         
         # Unpack results
