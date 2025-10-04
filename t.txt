@@ -1,0 +1,150 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-8.4.2, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /home/chris/pycwt-mod
+configfile: pyproject.toml
+plugins: benchmark-5.1.0, mypy-1.0.1, flake8-1.3.0, Faker-37.8.0, pylint-0.21.0, anyio-4.11.0, mock-3.15.1, xdist-3.8.0, timeout-2.4.0, cov-7.0.0, asyncio-1.2.0
+asyncio: mode=strict, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 4 items
+
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[10] FAILED [ 25%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[50] FAILED [ 50%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[100] FAILED [ 75%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[300] FAILED [100%]
+
+=================================== FAILURES ===================================
+____________ TestWaveletCoherence.test_wct_different_mc_counts[10] _____________
+
+self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aea10>
+test_client = <httpx.Client object at 0x752ade3af0d0>, api_base_url = '/api/v1'
+sample_signal_pair = (array([ 2.94867717e-01,  4.88260247e-01,  1.14462787e-01,  5.70220494e-01,
+        4.29949884e-01,  5.28670574e-01,  ...275e-01,  4.25834232e-01, -7.87846310e-02,
+        2.98558424e-01,  6.32089079e-01,  4.34627876e-01,  3.80251627e-01]))
+mc_count = 10
+
+    @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
+    def test_wct_different_mc_counts(self, test_client, api_base_url, sample_signal_pair, mc_count):
+        """Test WCT with different Monte Carlo iteration counts."""
+        signal1, signal2 = sample_signal_pair
+    
+        request = {
+            "signal1": signal1[:100].tolist(),
+            "signal2": signal2[:100].tolist(),
+            "dt": 0.01,
+            "mc_count": mc_count,
+            "backend": "sequential"
+        }
+    
+        response = test_client.post(
+            f"{api_base_url}/wavelet/wct",
+            json=request
+        )
+    
+>       assert response.status_code == 200
+E       assert 500 == 200
+E        +  where 500 = <Response [500 Internal Server Error]>.status_code
+
+client-tests/test_wavelet.py:255: AssertionError
+____________ TestWaveletCoherence.test_wct_different_mc_counts[50] _____________
+
+self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aead0>
+test_client = <httpx.Client object at 0x752ade1cb9d0>, api_base_url = '/api/v1'
+sample_signal_pair = (array([-0.03069786,  0.07719642,  0.19493153,  0.45681364,  0.32548061,
+        0.59346737,  0.94829535,  0.88160154,...78202, -0.22995188, -0.24945396, -0.1341492 ,
+        0.118939  ,  0.00421547,  0.67332882,  0.9304533 ,  1.03778031]))
+mc_count = 50
+
+    @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
+    def test_wct_different_mc_counts(self, test_client, api_base_url, sample_signal_pair, mc_count):
+        """Test WCT with different Monte Carlo iteration counts."""
+        signal1, signal2 = sample_signal_pair
+    
+        request = {
+            "signal1": signal1[:100].tolist(),
+            "signal2": signal2[:100].tolist(),
+            "dt": 0.01,
+            "mc_count": mc_count,
+            "backend": "sequential"
+        }
+    
+        response = test_client.post(
+            f"{api_base_url}/wavelet/wct",
+            json=request
+        )
+    
+>       assert response.status_code == 200
+E       assert 500 == 200
+E        +  where 500 = <Response [500 Internal Server Error]>.status_code
+
+client-tests/test_wavelet.py:255: AssertionError
+____________ TestWaveletCoherence.test_wct_different_mc_counts[100] ____________
+
+self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aed10>
+test_client = <httpx.Client object at 0x752ade15a080>, api_base_url = '/api/v1'
+sample_signal_pair = (array([ 0.17229197, -0.16664005,  0.2423597 ,  0.65305319,  0.33783405,
+        0.79230511,  0.51936963,  1.09264608,...482e-02, -2.16653230e-01,  3.18796478e-02,
+        5.26332833e-01,  4.92478637e-01,  5.08129812e-01,  5.25117692e-01]))
+mc_count = 100
+
+    @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
+    def test_wct_different_mc_counts(self, test_client, api_base_url, sample_signal_pair, mc_count):
+        """Test WCT with different Monte Carlo iteration counts."""
+        signal1, signal2 = sample_signal_pair
+    
+        request = {
+            "signal1": signal1[:100].tolist(),
+            "signal2": signal2[:100].tolist(),
+            "dt": 0.01,
+            "mc_count": mc_count,
+            "backend": "sequential"
+        }
+    
+        response = test_client.post(
+            f"{api_base_url}/wavelet/wct",
+            json=request
+        )
+    
+>       assert response.status_code == 200
+E       assert 500 == 200
+E        +  where 500 = <Response [500 Internal Server Error]>.status_code
+
+client-tests/test_wavelet.py:255: AssertionError
+____________ TestWaveletCoherence.test_wct_different_mc_counts[300] ____________
+
+self = <test_wavelet.TestWaveletCoherence object at 0x752ade3aedd0>
+test_client = <httpx.Client object at 0x752ade1c0490>, api_base_url = '/api/v1'
+sample_signal_pair = (array([-0.2418125 , -0.08824293,  0.15734537,  0.51558271,  0.45043123,
+        0.96801555,  0.26986455,  1.00698429,...576e-01,  6.24120267e-02,  1.10698069e-01,
+        1.72342196e-01,  6.73912926e-02,  5.19159020e-01,  4.51903337e-01]))
+mc_count = 300
+
+    @pytest.mark.parametrize("mc_count", [10, 50, 100, 300])
+    def test_wct_different_mc_counts(self, test_client, api_base_url, sample_signal_pair, mc_count):
+        """Test WCT with different Monte Carlo iteration counts."""
+        signal1, signal2 = sample_signal_pair
+    
+        request = {
+            "signal1": signal1[:100].tolist(),
+            "signal2": signal2[:100].tolist(),
+            "dt": 0.01,
+            "mc_count": mc_count,
+            "backend": "sequential"
+        }
+    
+        response = test_client.post(
+            f"{api_base_url}/wavelet/wct",
+            json=request
+        )
+    
+>       assert response.status_code == 200
+E       assert 500 == 200
+E        +  where 500 = <Response [500 Internal Server Error]>.status_code
+
+client-tests/test_wavelet.py:255: AssertionError
+=========================== short test summary info ============================
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[10]
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[50]
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[100]
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[300]
+============================== 4 failed in 1.25s ===============================
