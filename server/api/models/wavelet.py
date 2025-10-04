@@ -54,8 +54,9 @@ class WCTRequest(BaseModel):
     J: Optional[int] = Field(-1, description="Number of scales")
     mother: Optional[str] = Field("morlet", description="Mother wavelet")
     param: Optional[float] = Field(-1, description="Mother wavelet parameter")
-    significance_level: Optional[float] = Field(None, description="Significance level (0-1)", ge=0, le=1)
-    mc_count: Optional[int] = Field(300, description="Monte Carlo simulation count", ge=1)
+    sig: Optional[bool] = Field(False, description="Calculate significance levels (slower, uses Monte Carlo)")
+    significance_level: Optional[float] = Field(0.95, description="Significance level (0-1)", ge=0, le=1)
+    mc_count: Optional[int] = Field(30, description="Monte Carlo simulation count (reduced default for API performance)", ge=1)
     backend: Optional[str] = Field(None, description="Backend to use (sequential, joblib, elm11, etc.)")
     n_jobs: Optional[int] = Field(None, description="Number of parallel jobs")
     

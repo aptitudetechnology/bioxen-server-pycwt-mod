@@ -113,8 +113,9 @@ async def wavelet_coherence_transform(request: WCTRequest):
         )
         
         # Compute significance if requested
+        # Note: significance is computed if either sig=True OR significance_level is explicitly provided
         signif_list = None
-        if request.significance_level is not None:
+        if (request.sig or request.significance_level is not None):
             # Calculate lag-1 autocorrelation for red noise
             al1 = np.corrcoef(signal1[:-1], signal1[1:])[0, 1]
             al2 = np.corrcoef(signal2[:-1], signal2[1:])[0, 1]
@@ -128,7 +129,7 @@ async def wavelet_coherence_transform(request: WCTRequest):
                 s0=request.s0 if request.s0 and request.s0 > 0 else 2 * request.dt,
                 J=request.J if request.J and request.J > 0 else int(np.log2(len(signal1) * request.dt / (2 * request.dt)) / (request.dj if request.dj else 1/12)),
                 significance_level=request.significance_level,
-                mc_count=request.mc_count,
+                mc_count=request.mc_count if request.mc_count else 30,
                 backend=request.backend,
                 n_jobs=request.n_jobs,
                 progress=False,
