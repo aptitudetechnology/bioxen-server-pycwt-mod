@@ -1,0 +1,246 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-7.4.3, pluggy-1.6.0 -- /home/chris/pycwt-mod/venv/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /home/chris/pycwt-mod
+configfile: pyproject.toml
+plugins: benchmark-5.1.0, mypy-1.0.1, flake8-1.3.0, Faker-37.8.0, pylint-0.21.0, anyio-3.7.1, mock-3.15.1, xdist-3.8.0, timeout-2.4.0, asyncio-0.21.1, cov-7.0.0
+asyncio: mode=strict
+collecting ... collected 104 items
+
+client-tests/test_backends.py::TestBackendListing::test_list_backends_success PASSED [  0%]
+client-tests/test_backends.py::TestBackendListing::test_backends_have_required_fields PASSED [  1%]
+client-tests/test_backends.py::TestBackendListing::test_sequential_backend_always_available PASSED [  2%]
+client-tests/test_backends.py::TestBackendListing::test_backend_names_unique PASSED [  3%]
+client-tests/test_backends.py::TestBackendListing::test_list_backends_response_time FAILED [  4%]
+client-tests/test_backends.py::TestBackendInfo::test_get_sequential_backend PASSED [  5%]
+client-tests/test_backends.py::TestBackendInfo::test_get_joblib_backend PASSED [  6%]
+client-tests/test_backends.py::TestBackendInfo::test_get_elm11_backend PASSED [  7%]
+client-tests/test_backends.py::TestBackendInfo::test_get_nonexistent_backend PASSED [  8%]
+client-tests/test_backends.py::TestBackendInfo::test_get_known_backends[sequential] PASSED [  9%]
+client-tests/test_backends.py::TestBackendInfo::test_get_known_backends[joblib] PASSED [ 10%]
+client-tests/test_backends.py::TestBackendAvailability::test_cpu_backends_available PASSED [ 11%]
+client-tests/test_backends.py::TestBackendAvailability::test_hardware_backend_detection PASSED [ 12%]
+client-tests/test_backends.py::TestBackendAvailability::test_backend_cache_consistency PASSED [ 13%]
+client-tests/test_backends.py::TestBackendValidation::test_backend_name_case_sensitive PASSED [ 14%]
+client-tests/test_backends.py::TestBackendValidation::test_backend_name_special_characters PASSED [ 15%]
+client-tests/test_benchmark.py::TestBenchmarkBasic::test_benchmark_basic_request PASSED [ 16%]
+client-tests/test_benchmark.py::TestBenchmarkBasic::test_benchmark_results_structure PASSED [ 17%]
+client-tests/test_benchmark.py::TestBenchmarkBasic::test_benchmark_sequential_baseline PASSED [ 18%]
+client-tests/test_benchmark.py::TestBenchmarkBasic::test_benchmark_comprehensive PASSED [ 19%]
+client-tests/test_benchmark.py::TestBenchmarkComparison::test_joblib_faster_than_sequential PASSED [ 20%]
+client-tests/test_benchmark.py::TestBenchmarkComparison::test_fpga_performance PASSED [ 21%]
+client-tests/test_benchmark.py::TestBenchmarkComparison::test_scaling_behavior PASSED [ 22%]
+client-tests/test_benchmark.py::TestBenchmarkValidation::test_invalid_signal_length PASSED [ 23%]
+client-tests/test_benchmark.py::TestBenchmarkValidation::test_invalid_mc_count PASSED [ 24%]
+client-tests/test_benchmark.py::TestBenchmarkValidation::test_empty_backends_list PASSED [ 25%]
+client-tests/test_benchmark.py::TestBenchmarkValidation::test_nonexistent_backend PASSED [ 25%]
+client-tests/test_benchmark.py::TestBenchmarkValidation::test_very_large_signal PASSED [ 26%]
+client-tests/test_benchmark.py::TestBenchmarkResearchValidation::test_mvp_question1_performance_characterization PASSED [ 27%]
+client-tests/test_benchmark.py::TestBenchmarkResearchValidation::test_mvp_question2_pywavelets_comparison PASSED [ 28%]
+client-tests/test_benchmark.py::TestBenchmarkResearchValidation::test_fpga_research_latency_measurement PASSED [ 29%]
+client-tests/test_benchmark.py::TestBenchmarkTimeout::test_benchmark_reasonable_timeout PASSED [ 30%]
+client-tests/test_benchmark.py::TestBenchmarkTimeout::test_benchmark_long_computation PASSED [ 31%]
+client-tests/test_hardware.py::TestHardwareDetection::test_hardware_detect_success PASSED [ 32%]
+client-tests/test_hardware.py::TestHardwareDetection::test_fpga_detection_structure PASSED [ 33%]
+client-tests/test_hardware.py::TestHardwareDetection::test_embedded_detection_structure PASSED [ 34%]
+client-tests/test_hardware.py::TestHardwareDetection::test_gpu_detection_structure PASSED [ 35%]
+client-tests/test_hardware.py::TestHardwareDetection::test_cpu_detection_always_available PASSED [ 36%]
+client-tests/test_hardware.py::TestHardwareDetection::test_fpga_tang_nano_9k_detection PASSED [ 37%]
+client-tests/test_hardware.py::TestHardwareDetection::test_hardware_detection_response_time PASSED [ 38%]
+client-tests/test_hardware.py::TestHardwareDetection::test_hardware_detection_idempotent PASSED [ 39%]
+client-tests/test_hardware.py::TestSerialPortDetection::test_serial_ports_listed PASSED [ 40%]
+client-tests/test_hardware.py::TestSerialPortDetection::test_sipeed_jtag_detected PASSED [ 41%]
+client-tests/test_hardware.py::TestGPUDetection::test_gpu_detection_no_error PASSED [ 42%]
+client-tests/test_hardware.py::TestGPUDetection::test_nvidia_gpu_detection PASSED [ 43%]
+client-tests/test_hardware.py::TestGPUDetection::test_gpu_unavailable_graceful PASSED [ 44%]
+client-tests/test_hardware.py::TestCPUInformation::test_cpu_core_count PASSED [ 45%]
+client-tests/test_hardware.py::TestCPUInformation::test_cpu_information_detailed PASSED [ 46%]
+client-tests/test_hardware.py::TestHardwareErrorHandling::test_hardware_detection_never_fails PASSED [ 47%]
+client-tests/test_hardware.py::TestHardwareErrorHandling::test_partial_hardware_failure_handled PASSED [ 48%]
+client-tests/test_hardware.py::TestHardwareErrorHandling::test_hardware_timeout_handled PASSED [ 49%]
+client-tests/test_hardware.py::TestHardwareIntegrationWithBackends::test_hardware_matches_backend_availability PASSED [ 50%]
+client-tests/test_hardware.py::TestHardwareIntegrationWithBackends::test_cpu_available_sequential_available PASSED [ 50%]
+client-tests/test_health.py::test_root_endpoint PASSED                   [ 51%]
+client-tests/test_health.py::test_health_check_healthy PASSED            [ 52%]
+client-tests/test_health.py::test_health_check_response_time PASSED      [ 53%]
+client-tests/test_health.py::test_docs_endpoint_exists PASSED            [ 54%]
+client-tests/test_health.py::test_redoc_endpoint_exists PASSED           [ 55%]
+client-tests/test_health.py::test_openapi_schema_exists PASSED           [ 56%]
+client-tests/test_health.py::test_invalid_endpoint_404 PASSED            [ 57%]
+client-tests/test_health.py::test_cors_headers_present PASSED            [ 58%]
+client-tests/test_health.py::test_all_root_endpoints_accessible[/] PASSED [ 59%]
+client-tests/test_health.py::test_all_root_endpoints_accessible[/health] PASSED [ 60%]
+client-tests/test_health.py::test_all_root_endpoints_accessible[/docs] PASSED [ 61%]
+client-tests/test_health.py::test_all_root_endpoints_accessible[/redoc] PASSED [ 62%]
+client-tests/test_integration.py::TestCompleteWorkflow::test_full_wct_workflow FAILED [ 63%]
+client-tests/test_integration.py::TestCompleteWorkflow::test_benchmark_then_analyze_workflow FAILED [ 64%]
+client-tests/test_integration.py::TestCompleteWorkflow::test_multiple_analyses_sequential PASSED [ 65%]
+client-tests/test_integration.py::TestBackendFallback::test_fpga_unavailable_fallback FAILED [ 66%]
+client-tests/test_integration.py::TestBackendFallback::test_invalid_backend_error FAILED [ 67%]
+client-tests/test_integration.py::TestErrorRecovery::test_malformed_request_recovery PASSED [ 68%]
+client-tests/test_integration.py::TestErrorRecovery::test_error_doesnt_crash_server PASSED [ 69%]
+client-tests/test_integration.py::TestConcurrentRequests::test_multiple_backends_simultaneously PASSED [ 70%]
+client-tests/test_integration.py::TestConcurrentRequests::test_parallel_computations PASSED [ 71%]
+client-tests/test_integration.py::TestDataIntegrity::test_cwt_output_consistency PASSED [ 72%]
+client-tests/test_integration.py::TestDataIntegrity::test_wct_coherence_values_valid FAILED [ 73%]
+client-tests/test_integration.py::TestBioXenIntegration::test_bioxen_remote_backend_workflow PASSED [ 74%]
+client-tests/test_integration.py::TestBioXenIntegration::test_bioxen_batch_analysis PASSED [ 75%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_basic_request PASSED [ 75%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_full_parameters PASSED [ 76%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_invalid_data PASSED [ 77%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_negative_dt PASSED [ 78%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_missing_required_field PASSED [ 79%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_large_signal PASSED [ 80%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_different_wavelets[morlet] PASSED [ 81%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_different_wavelets[paul] PASSED [ 82%]
+client-tests/test_wavelet.py::TestContinuousWaveletTransform::test_cwt_different_wavelets[dog] PASSED [ 83%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_basic_request PASSED [ 84%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_with_significance FAILED [ 85%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_backends FAILED [ 86%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_fpga_backend PASSED [ 87%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_mismatched_signal_lengths PASSED [ 88%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_computation_time_reported PASSED [ 89%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[10] FAILED [ 90%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[50] PASSED [ 91%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[100] FAILED [ 92%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[300] FAILED [ 93%]
+client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_performance_scales FAILED [ 94%]
+client-tests/test_wavelet.py::TestCrossWaveletTransform::test_xwt_basic_request PASSED [ 95%]
+client-tests/test_wavelet.py::TestCrossWaveletTransform::test_xwt_mismatched_lengths PASSED [ 96%]
+client-tests/test_wavelet.py::TestCrossWaveletTransform::test_xwt_phase_angles FAILED [ 97%]
+client-tests/test_wavelet.py::TestWaveletValidation::test_empty_signal_rejected PASSED [ 98%]
+client-tests/test_wavelet.py::TestWaveletValidation::test_nan_values_handled PASSED [ 99%]
+client-tests/test_wavelet.py::TestWaveletValidation::test_invalid_json PASSED [100%]
+
+=================================== FAILURES ===================================
+_____________ TestBackendListing.test_list_backends_response_time ______________
+client-tests/test_backends.py:72: in test_list_backends_response_time
+    assert elapsed < 2.0, "Backend listing took too long"
+E   AssertionError: Backend listing took too long
+E   assert 2.042236566543579 < 2.0
+_________________ TestCompleteWorkflow.test_full_wct_workflow __________________
+client-tests/test_integration.py:62: in test_full_wct_workflow
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+__________ TestCompleteWorkflow.test_benchmark_then_analyze_workflow ___________
+client-tests/test_integration.py:114: in test_benchmark_then_analyze_workflow
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________ TestBackendFallback.test_fpga_unavailable_fallback ______________
+client-tests/test_integration.py:160: in test_fpga_unavailable_fallback
+    assert response.status_code in [200, 400, 503]
+E   assert 500 in [200, 400, 503]
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+________________ TestBackendFallback.test_invalid_backend_error ________________
+client-tests/test_integration.py:181: in test_invalid_backend_error
+    assert response.status_code in [400, 404, 422]
+E   assert 500 in [400, 404, 422]
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________ TestDataIntegrity.test_wct_coherence_values_valid _______________
+client-tests/test_integration.py:332: in test_wct_coherence_values_valid
+    wct = np.array(data["WCT"])
+E   KeyError: 'WCT'
+_______________ TestWaveletCoherence.test_wct_with_significance ________________
+venv/lib/python3.10/site-packages/httpx/_transports/default.py:66: in map_httpcore_exceptions
+    yield
+venv/lib/python3.10/site-packages/httpx/_transports/default.py:228: in handle_request
+    resp = self._pool.handle_request(req)
+venv/lib/python3.10/site-packages/httpcore/_sync/connection_pool.py:256: in handle_request
+    raise exc from None
+venv/lib/python3.10/site-packages/httpcore/_sync/connection_pool.py:236: in handle_request
+    response = connection.handle_request(
+venv/lib/python3.10/site-packages/httpcore/_sync/connection.py:103: in handle_request
+    return self._connection.handle_request(request)
+venv/lib/python3.10/site-packages/httpcore/_sync/http11.py:136: in handle_request
+    raise exc
+venv/lib/python3.10/site-packages/httpcore/_sync/http11.py:106: in handle_request
+    ) = self._receive_response_headers(**kwargs)
+venv/lib/python3.10/site-packages/httpcore/_sync/http11.py:177: in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+venv/lib/python3.10/site-packages/httpcore/_sync/http11.py:217: in _receive_event
+    data = self._network_stream.read(
+venv/lib/python3.10/site-packages/httpcore/_backends/sync.py:126: in read
+    with map_exceptions(exc_map):
+/usr/lib/python3.10/contextlib.py:153: in __exit__
+    self.gen.throw(typ, value, traceback)
+venv/lib/python3.10/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ReadTimeout: timed out
+
+The above exception was the direct cause of the following exception:
+client-tests/test_wavelet.py:154: in test_wct_with_significance
+    response = test_client.post(
+venv/lib/python3.10/site-packages/httpx/_client.py:1132: in post
+    return self.request(
+venv/lib/python3.10/site-packages/httpx/_client.py:814: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+venv/lib/python3.10/site-packages/httpx/_client.py:901: in send
+    response = self._send_handling_auth(
+venv/lib/python3.10/site-packages/httpx/_client.py:929: in _send_handling_auth
+    response = self._send_handling_redirects(
+venv/lib/python3.10/site-packages/httpx/_client.py:966: in _send_handling_redirects
+    response = self._send_single_request(request)
+venv/lib/python3.10/site-packages/httpx/_client.py:1002: in _send_single_request
+    response = transport.handle_request(request)
+venv/lib/python3.10/site-packages/httpx/_transports/default.py:227: in handle_request
+    with map_httpcore_exceptions():
+/usr/lib/python3.10/contextlib.py:153: in __exit__
+    self.gen.throw(typ, value, traceback)
+venv/lib/python3.10/site-packages/httpx/_transports/default.py:83: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ReadTimeout: timed out
+_______________ TestWaveletCoherence.test_wct_different_backends _______________
+client-tests/test_wavelet.py:188: in test_wct_different_backends
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+____________ TestWaveletCoherence.test_wct_different_mc_counts[10] _____________
+client-tests/test_wavelet.py:255: in test_wct_different_mc_counts
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+____________ TestWaveletCoherence.test_wct_different_mc_counts[100] ____________
+client-tests/test_wavelet.py:255: in test_wct_different_mc_counts
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+____________ TestWaveletCoherence.test_wct_different_mc_counts[300] ____________
+client-tests/test_wavelet.py:255: in test_wct_different_mc_counts
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+_______________ TestWaveletCoherence.test_wct_performance_scales _______________
+client-tests/test_wavelet.py:279: in test_wct_performance_scales
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+_______________ TestCrossWaveletTransform.test_xwt_phase_angles ________________
+client-tests/test_wavelet.py:336: in test_xwt_phase_angles
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+=============================== warnings summary ===============================
+client-tests/test_integration.py::TestErrorRecovery::test_malformed_request_recovery
+client-tests/test_wavelet.py::TestWaveletValidation::test_invalid_json
+  /home/chris/pycwt-mod/venv/lib/python3.10/site-packages/httpx/_content.py:204: DeprecationWarning: Use 'content=<...>' to upload raw bytes/text content.
+    warnings.warn(message, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED client-tests/test_backends.py::TestBackendListing::test_list_backends_response_time
+FAILED client-tests/test_integration.py::TestCompleteWorkflow::test_full_wct_workflow
+FAILED client-tests/test_integration.py::TestCompleteWorkflow::test_benchmark_then_analyze_workflow
+FAILED client-tests/test_integration.py::TestBackendFallback::test_fpga_unavailable_fallback
+FAILED client-tests/test_integration.py::TestBackendFallback::test_invalid_backend_error
+FAILED client-tests/test_integration.py::TestDataIntegrity::test_wct_coherence_values_valid
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_with_significance
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_backends
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[10]
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[100]
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_different_mc_counts[300]
+FAILED client-tests/test_wavelet.py::TestWaveletCoherence::test_wct_performance_scales
+FAILED client-tests/test_wavelet.py::TestCrossWaveletTransform::test_xwt_phase_angles
+============= 13 failed, 91 passed, 2 warnings in 94.83s (0:01:34) =============
