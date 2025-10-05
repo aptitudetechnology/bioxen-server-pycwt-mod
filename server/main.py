@@ -88,9 +88,26 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "server.main:app",
-        host=settings.HOST,
-        port=settings.PORT,
-        reload=True
-    )
+    import os
+    
+    # Check if running in development mode
+    dev_mode = os.environ.get("DEV_MODE", "false").lower() == "true"
+    
+    if dev_mode:
+        # Development: single worker with auto-reload
+        print("Running in DEVELOPMENT mode (single worker, auto-reload enabled)")
+        uvicorn.run(
+            "server.main:app",
+            host=settings.HOST,
+            port=settings.PORT,
+            reload=True
+        )
+    else:
+        # Production: multi-worker SMP mode
+        print(f"Running in PRODUCTION mode ({settings.WORKERS} workers, SMP enabled)")
+        uvicorn.run(
+            "server.main:app",
+            host=settings.HOST,
+            port=settings.PORT,
+            workers=settings.WORKERS
+        )

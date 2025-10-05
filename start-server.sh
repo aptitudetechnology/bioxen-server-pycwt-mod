@@ -23,10 +23,16 @@ if ! python -c "import fastapi" 2>/dev/null; then
     pip install -r server/requirements.txt
 fi
 
-# Run the server
-echo -e "${GREEN}Server starting at http://localhost:8000${NC}"
+# Detect number of CPU cores
+CPU_CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+WORKERS=${WORKERS:-$CPU_CORES}  # Use env var or default to CPU cores
+
+# Run the server with SMP enabled
+echo -e "${GREEN}Server starting at http://0.0.0.0:8000${NC}"
+echo -e "${GREEN}Workers: ${WORKERS} (SMP enabled)${NC}"
 echo -e "${GREEN}API Documentation: http://localhost:8000/docs${NC}"
 echo -e "${GREEN}Health Check: http://localhost:8000/health${NC}"
 echo ""
 
-python -m server.main
+# Use uvicorn directly with workers for production SMP support
+python -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --workers ${WORKERS}
