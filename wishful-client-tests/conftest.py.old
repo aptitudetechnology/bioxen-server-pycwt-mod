@@ -1,0 +1,365 @@
+"""
+Pytest configuration for wishful BioXen client tests.
+
+Provides fixtures for:
+- Test client (FastAPI TestClient)
+- Sample signals and environmental data
+- Mock sensor data
+- VM instances
+"""
+
+import pytest
+import numpy as np
+from typing import Dict, List, Any
+
+
+@pytest.fixture
+def test_client():
+    """
+    FastAPI TestClient for BioXen REST API.
+    
+    NOTE: This would import from the actual BioXen server when implemented.
+    For now, this is aspirational.
+    """
+    # Future implementation:
+    # from fastapi.testclient import TestClient
+    # from bioxen_api.server import app
+    # return TestClient(app)
+    
+    # Placeholder for wishful thinking
+    class MockTestClient:
+        def get(self, url, **kwargs):
+            raise NotImplementedError("BioXen REST API not yet implemented")
+        
+        def post(self, url, **kwargs):
+            raise NotImplementedError("BioXen REST API not yet implemented")
+        
+        def delete(self, url, **kwargs):
+            raise NotImplementedError("BioXen REST API not yet implemented")
+        
+        def patch(self, url, **kwargs):
+            raise NotImplementedError("BioXen REST API not yet implemented")
+    
+    return MockTestClient()
+
+
+@pytest.fixture
+def api_base_url():
+    """Base URL for BioXen REST API."""
+    return "http://localhost:8000/api/v1"
+
+
+# ============================================================================
+# Environmental Data Fixtures
+# ============================================================================
+
+@pytest.fixture
+def sample_bme280_reading():
+    """Sample BME280 environmental sensor reading."""
+    return {
+        "temperature_celsius": 25.0,
+        "humidity_percent": 45.0,
+        "pressure_hpa": 1013.25,
+        "timestamp": "2025-10-05T12:00:00Z"
+    }
+
+
+@pytest.fixture
+def sample_ltr559_reading():
+    """Sample LTR-559 light sensor reading."""
+    return {
+        "lux": 1000.0,
+        "ch0": 2500,  # Visible + IR
+        "ch1": 1500,  # IR only
+        "proximity": 100,
+        "timestamp": "2025-10-05T12:00:00Z"
+    }
+
+
+@pytest.fixture
+def light_dark_cycle_12_12():
+    """12 hours light, 12 hours dark cycle configuration."""
+    return {
+        "cycle_type": "12L:12D",
+        "light_intensity_lux": 1000.0,
+        "dark_intensity_lux": 0.1,
+        "start_time": "08:00",
+        "timezone": "UTC"
+    }
+
+
+@pytest.fixture
+def environmental_time_series_24h():
+    """24-hour environmental data time series."""
+    timestamps = np.arange(0, 24*3600, 300)  # Every 5 minutes for 24 hours
+    
+    # Simulate natural light cycle
+    hours = timestamps / 3600
+    light_lux = np.where(
+        (hours >= 6) & (hours <= 18),
+        1000 * np.sin(np.pi * (hours - 6) / 12),  # Dawn to dusk
+        0.1  # Night
+    )
+    
+    # Simulate temperature variation
+    temp_celsius = 20 + 5 * np.sin(2 * np.pi * (hours - 6) / 24)
+    
+    # Constant humidity with small noise
+    humidity_percent = 50 + np.random.normal(0, 2, len(timestamps))
+    
+    return {
+        "timestamps": timestamps.tolist(),
+        "light_lux": light_lux.tolist(),
+        "temperature_celsius": temp_celsius.tolist(),
+        "humidity_percent": humidity_percent.tolist()
+    }
+
+
+# ============================================================================
+# Biological Signal Fixtures
+# ============================================================================
+
+@pytest.fixture
+def circadian_signal_48h():
+    """
+    Generate 48-hour circadian rhythm signal.
+    Period: ~24 hours
+    Sampling: Every 5 minutes
+    """
+    t = np.arange(0, 48*3600, 300)  # 48 hours, 5-min intervals
+    period = 24 * 3600  # 24 hours in seconds
+    
+    # Gene expression oscillation
+    signal = 100 + 20 * np.sin(2 * np.pi * t / period) + np.random.normal(0, 3, len(t))
+    
+    return {
+        "timestamps": t.tolist(),
+        "signal": signal.tolist(),
+        "expected_period_hours": 24.0,
+        "expected_amplitude": 20.0
+    }
+
+
+@pytest.fixture
+def metabolic_time_series():
+    """Generate realistic metabolic time series (ATP, glucose)."""
+    t = np.arange(0, 24*3600, 60)  # 24 hours, 1-min intervals
+    
+    # ATP with circadian modulation
+    atp = 100 + 15 * np.sin(2*np.pi*t/(24*3600)) + np.random.normal(0, 5, len(t))
+    
+    # Glucose consumption (declining)
+    glucose = 50 * np.exp(-t/(12*3600)) + np.random.normal(0, 2, len(t))
+    
+    return {
+        "timestamps": t.tolist(),
+        "atp": atp.tolist(),
+        "glucose": glucose.tolist()
+    }
+
+
+@pytest.fixture
+def temperature_shock_response():
+    """Generate temperature shock response time series."""
+    # Baseline at 25°C for 1 hour
+    baseline = np.full(360, 100.0)  # 1 hour at 1-min intervals
+    
+    # Shock to 42°C - immediate stress response
+    shock = 100 + 50 * (1 - np.exp(-np.arange(360)/60))  # Recovery over 1 hour
+    
+    # Return to baseline - adaptation
+    recovery = 150 - 50 * (1 - np.exp(-np.arange(360)/120))
+    
+    signal = np.concatenate([baseline, shock, recovery])
+    timestamps = np.arange(len(signal)) * 60  # Every minute
+    
+    return {
+        "timestamps": timestamps.tolist(),
+        "hsp_expression": signal.tolist(),  # Heat shock protein
+        "baseline_temp": 25.0,
+        "shock_temp": 42.0,
+        "shock_start_time": 3600
+    }
+
+
+# ============================================================================
+# VM Configuration Fixtures
+# ============================================================================
+
+@pytest.fixture
+def ecoli_vm_config():
+    """E. coli VM configuration."""
+    return {
+        "vm_id": "test_ecoli_001",
+        "biological_type": "ecoli",
+        "vm_type": "basic",
+        "config": {
+            "genome_file": "ecoli_k12.gbk",
+            "enable_metabolism": True
+        }
+    }
+
+
+@pytest.fixture
+def yeast_circadian_vm_config():
+    """Yeast VM with circadian capability."""
+    return {
+        "vm_id": "test_yeast_circadian",
+        "biological_type": "yeast",
+        "vm_type": "circadian_capable",
+        "genes": ["FRQ", "WC-1", "WC-2"],  # Neurospora homologs
+        "config": {
+            "enable_circadian": True,
+            "enable_metabolism": True
+        }
+    }
+
+
+@pytest.fixture
+def syn3a_vm_config():
+    """Syn3A minimal cell VM configuration."""
+    return {
+        "vm_id": "test_syn3a_001",
+        "biological_type": "syn3a",
+        "vm_type": "minimal",
+        "config": {
+            "genome_file": "syn3a.gbk",
+            "gene_count": 473,
+            "enable_metabolism": True
+        }
+    }
+
+
+@pytest.fixture
+def cyanobacteria_vm_config():
+    """Cyanobacteria VM with circadian clock."""
+    return {
+        "vm_id": "test_cyano_001",
+        "biological_type": "synechococcus",
+        "vm_type": "circadian_capable",
+        "genes": ["kaiA", "kaiB", "kaiC"],  # Kai oscillator
+        "config": {
+            "enable_circadian": True,
+            "enable_photosynthesis": True
+        }
+    }
+
+
+# ============================================================================
+# Reference Data Fixtures
+# ============================================================================
+
+@pytest.fixture
+def reference_circadian_data():
+    """Expected circadian dynamics for validation."""
+    return {
+        "expected_period_hours": 24.0,
+        "expected_amplitude": 20.0,
+        "tolerance_hours": 2.0,
+        "tolerance_amplitude_percent": 20.0
+    }
+
+
+@pytest.fixture
+def reference_temperature_compensation_data():
+    """Expected Q10 values for temperature compensation."""
+    return {
+        "temperatures_celsius": [15, 25, 35],
+        "expected_periods_hours": [24.0, 24.0, 24.0],
+        "expected_q10": 1.0,
+        "tolerance_q10": 0.2
+    }
+
+
+@pytest.fixture
+def reference_heat_shock_genes():
+    """Heat shock genes and expected fold changes."""
+    return {
+        "genes": ["dnaK", "dnaJ", "groEL", "groES"],
+        "expected_fold_change": 10.0,
+        "tolerance_fold_change": 5.0
+    }
+
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+def generate_realistic_atp_time_series(duration_hours: int, circadian: bool = True) -> Dict[str, List[float]]:
+    """Generate realistic ATP time series."""
+    t = np.arange(0, duration_hours*3600, 60)
+    
+    if circadian:
+        atp = 100 + 20 * np.sin(2*np.pi*t/(24*3600)) + np.random.normal(0, 5, len(t))
+    else:
+        atp = 100 + np.random.normal(0, 5, len(t))
+    
+    return {"timestamps": t.tolist(), "atp": atp.tolist()}
+
+
+def generate_light_dark_cycle(cycle_type: str, duration_hours: int) -> Dict[str, List[float]]:
+    """
+    Generate light-dark cycle data.
+    
+    Args:
+        cycle_type: "12L:12D", "16L:8D", "8L:16D", etc.
+        duration_hours: Total duration
+    
+    Returns:
+        Dict with timestamps and light_lux
+    """
+    light_hours, dark_hours = map(int, cycle_type.replace("L:", ",").replace("D", "").split(","))
+    
+    t = np.arange(0, duration_hours*3600, 300)  # 5-min intervals
+    hours = (t / 3600) % (light_hours + dark_hours)
+    
+    light_lux = np.where(hours < light_hours, 1000.0, 0.1)
+    
+    return {"timestamps": t.tolist(), "light_lux": light_lux.tolist()}
+
+
+def assert_circadian_period(signal: List[float], expected_period: float, tolerance: float = 2.0):
+    """
+    Assert that signal has expected circadian period using Fourier analysis.
+    
+    NOTE: This would use actual Fourier analysis when implemented.
+    For now, placeholder.
+    """
+    # Future implementation would use SystemAnalyzer
+    pass
+
+
+def assert_temperature_compensated(periods_at_temps: Dict[float, float], expected_q10: float = 1.0, tolerance: float = 0.2):
+    """
+    Assert that circadian period is temperature compensated (Q10 ≈ 1).
+    
+    Args:
+        periods_at_temps: Dict mapping temperature to period
+        expected_q10: Expected Q10 value (~1.0 for circadian)
+        tolerance: Acceptable deviation
+    """
+    # Future implementation would calculate Q10
+    pass
+
+
+# ============================================================================
+# Pytest Markers
+# ============================================================================
+
+def pytest_configure(config):
+    """Register custom markers."""
+    config.addinivalue_line(
+        "markers", "sensor: Tests requiring hardware sensors (BME280, LTR-559)"
+    )
+    config.addinivalue_line(
+        "markers", "circadian: Tests for circadian rhythm analysis"
+    )
+    config.addinivalue_line(
+        "markers", "validation: Model validation tests"
+    )
+    config.addinivalue_line(
+        "markers", "integration: Full workflow integration tests"
+    )
+    config.addinivalue_line(
+        "markers", "wishful: Aspirational tests (not yet executable)"
+    )

@@ -1,0 +1,760 @@
+# BioXen Model Validation API Test Suite (Wishful Thinking)
+
+**Purpose:** Define comprehensive test suite for BioXen's future REST API server that would provide model validation, parameter tuning, and simulation quality assurance services.
+
+**Status:** 🔮 Aspirational - These are the tests we WOULD run if we had server APIs  
+**Context:** Similar to `client-tests/` for PyCWT-mod, but for BioXen's computational biology model validation platform
+
+---
+
+## 🎯 What APIs Would We Test?
+
+Based on our recent documentation reframing (see `REFRAMING_COMPLETE.md`), the BioXen server would provide:
+
+### 1. **VM Simulation APIs**
+- Create/start/stop biological VMs (E. coli, yeast, Syn3A minimal cell)
+- Run continuous simulations with metabolic tracking
+- Query VM state and historical time-series data
+
+### 2. **Model Validation APIs**
+- Validate oscillation periods against expected dynamics
+- Check numerical stability of ODE simulations
+- Detect model deviations from experimental reference data
+- Assess simulation quality metrics
+
+### 3. **Parameter Tuning APIs**
+- Suggest rate constant adjustments based on validation
+- Recommend timestep changes for stability
+- Optimize damping coefficients
+- Tune initial conditions for better model fit
+
+### 4. **Four-Lens Analysis APIs**
+- Fourier analysis for oscillation detection
+- Wavelet analysis for transient events
+- Laplace analysis for system stability
+- Z-Transform for noise filtering
+
+### 5. **Performance Monitoring APIs**
+- Profiler data streaming
+- Real-time validation alerts
+- Historical validation results
+- Benchmark analysis overhead
+
+---
+
+## 📋 Test Structure (6 Modules, 100+ Tests)
+
+### Module 1: `test_vm_lifecycle.py`
+**Purpose:** VM creation, lifecycle management, resource allocation
+
+```python
+class TestVMCreation:
+    """Test VM instantiation and configuration."""
+    
+    def test_create_ecoli_vm(self, test_client):
+        """POST /api/v1/vms - Create E. coli VM"""
+        response = test_client.post("/api/v1/vms", json={
+            "vm_id": "ecoli_001",
+            "biological_type": "ecoli",
+            "vm_type": "basic",
+            "config": {"genome_file": "ecoli_k12.gbk"}
+        })
+        assert response.status_code == 201
+        assert response.json()["vm_id"] == "ecoli_001"
+        assert response.json()["state"] == "created"
+    
+    def test_create_syn3a_minimal_cell(self, test_client):
+        """Create Syn3A minimal cell (473 genes)"""
+        response = test_client.post("/api/v1/vms", json={
+            "vm_id": "syn3a_001",
+            "biological_type": "syn3a",
+            "vm_type": "minimal",
+            "config": {"enable_metabolism": True}
+        })
+        assert response.status_code == 201
+        assert response.json()["gene_count"] == 473
+    
+    def test_allocate_resources(self, test_client):
+        """POST /api/v1/vms/{vm_id}/resources"""
+        response = test_client.post("/api/v1/vms/ecoli_001/resources", json={
+            "atp": 100.0,
+            "ribosomes": 50,
+            "amino_acids": 1000
+        })
+        assert response.status_code == 200
+
+class TestVMLifecycle:
+    """Test VM state transitions."""
+    
+    def test_start_vm(self, test_client):
+        """POST /api/v1/vms/{vm_id}/start"""
+        response = test_client.post("/api/v1/vms/ecoli_001/start")
+        assert response.status_code == 200
+        assert response.json()["state"] == "running"
+    
+    def test_stop_vm(self, test_client):
+        """POST /api/v1/vms/{vm_id}/stop"""
+        response = test_client.post("/api/v1/vms/ecoli_001/stop")
+        assert response.status_code == 200
+        assert response.json()["state"] == "stopped"
+    
+    def test_destroy_vm(self, test_client):
+        """DELETE /api/v1/vms/{vm_id}"""
+        response = test_client.delete("/api/v1/vms/ecoli_001")
+        assert response.status_code == 204
+
+class TestVMStatus:
+    """Test VM status queries."""
+    
+    def test_get_vm_status(self, test_client):
+        """GET /api/v1/vms/{vm_id}/status"""
+        response = test_client.get("/api/v1/vms/ecoli_001/status")
+        assert response.status_code == 200
+        assert "state" in response.json()
+        assert "resources" in response.json()
+        assert "uptime" in response.json()
+    
+    def test_list_all_vms(self, test_client):
+        """GET /api/v1/vms"""
+        response = test_client.get("/api/v1/vms")
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
+```
+
+---
+
+### Module 2: `test_continuous_simulation.py`
+**Purpose:** Continuous metabolic simulations with time-series data
+
+```python
+class TestContinuousSimulation:
+    """Test continuous simulation mode (Phase 2 feature)."""
+    
+    def test_start_continuous_simulation(self, test_client):
+        """POST /api/v1/vms/{vm_id}/simulate/continuous"""
+        response = test_client.post("/api/v1/vms/ecoli_001/simulate/continuous", json={
+            "duration_hours": 48,
+            "update_interval": 5.0,
+            "track_metabolites": ["ATP", "glucose", "lactate"]
+        })
+        assert response.status_code == 202  # Accepted (async)
+        assert "simulation_id" in response.json()
+    
+    def test_get_simulation_status(self, test_client):
+        """GET /api/v1/vms/{vm_id}/simulate/{sim_id}/status"""
+        response = test_client.get("/api/v1/vms/ecoli_001/simulate/sim_001/status")
+        assert response.status_code == 200
+        assert response.json()["status"] in ["running", "completed", "failed"]
+        assert "progress_percent" in response.json()
+    
+    def test_stop_simulation(self, test_client):
+        """POST /api/v1/vms/{vm_id}/simulate/{sim_id}/stop"""
+        response = test_client.post("/api/v1/vms/ecoli_001/simulate/sim_001/stop")
+        assert response.status_code == 200
+
+class TestMetabolicHistory:
+    """Test historical metabolic data retrieval."""
+    
+    def test_get_metabolic_history_all(self, test_client):
+        """GET /api/v1/vms/{vm_id}/history"""
+        response = test_client.get("/api/v1/vms/ecoli_001/history")
+        assert response.status_code == 200
+        data = response.json()
+        assert "timestamps" in data
+        assert "atp" in data
+        assert "glucose" in data
+        assert len(data["timestamps"]) > 0
+    
+    def test_get_metabolic_history_filtered(self, test_client):
+        """GET /api/v1/vms/{vm_id}/history?metabolites=ATP,glucose&start_time=0&end_time=3600"""
+        response = test_client.get(
+            "/api/v1/vms/ecoli_001/history",
+            params={"metabolites": "ATP,glucose", "start_time": 0, "end_time": 3600}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert set(data.keys()) == {"timestamps", "atp", "glucose"}
+    
+    def test_get_gene_expression_history(self, test_client):
+        """GET /api/v1/vms/{vm_id}/history/genes"""
+        response = test_client.get("/api/v1/vms/ecoli_001/history/genes")
+        assert response.status_code == 200
+        assert "gene_expression" in response.json()
+
+class TestRealisticDynamics:
+    """Test biological realism in simulations."""
+    
+    def test_circadian_oscillations_yeast(self, test_client):
+        """Verify yeast VM generates ~24h circadian rhythms"""
+        # Run 48-hour simulation
+        sim_response = test_client.post("/api/v1/vms/yeast_001/simulate/continuous", json={
+            "duration_hours": 48,
+            "update_interval": 5.0
+        })
+        sim_id = sim_response.json()["simulation_id"]
+        
+        # Wait for completion (or poll status)
+        # ...
+        
+        # Get metabolic history
+        history = test_client.get(f"/api/v1/vms/yeast_001/history").json()
+        
+        # Validate oscillation period ~24h (would use Fourier analysis)
+        assert len(history["timestamps"]) > 0
+        # TODO: Add Fourier validation of period
+```
+
+---
+
+### Module 3: `test_model_validation.py`
+**Purpose:** Model validation endpoints (Phase 3 feature)
+
+```python
+class TestOscillationValidation:
+    """Test oscillation period validation."""
+    
+    def test_validate_circadian_period(self, test_client):
+        """POST /api/v1/vms/{vm_id}/validate/oscillation"""
+        response = test_client.post("/api/v1/vms/yeast_001/validate/oscillation", json={
+            "metabolite": "ATP",
+            "expected_period_hours": 24.0,
+            "tolerance_hours": 2.0,
+            "analysis_window_hours": 48.0
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "detected_period_hours" in result
+        assert "period_match" in result  # Boolean
+        assert "confidence" in result
+    
+    def test_validate_ultradian_rhythm(self, test_client):
+        """Validate faster oscillations (< 24h)"""
+        response = test_client.post("/api/v1/vms/ecoli_001/validate/oscillation", json={
+            "metabolite": "glucose",
+            "expected_period_hours": 4.0,
+            "tolerance_hours": 0.5
+        })
+        assert response.status_code == 200
+
+class TestStabilityValidation:
+    """Test numerical stability checks."""
+    
+    def test_validate_ode_stability(self, test_client):
+        """POST /api/v1/vms/{vm_id}/validate/stability"""
+        response = test_client.post("/api/v1/vms/ecoli_001/validate/stability", json={
+            "analysis_method": "laplace",
+            "check_poles": True,
+            "check_damping": True
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert result["stability"] in ["stable", "unstable", "marginally_stable", "oscillatory"]
+        assert "damping_ratio" in result
+        assert "dominant_poles" in result
+    
+    def test_detect_numerical_instability(self, test_client):
+        """Detect unstable simulation (should flag for timestep reduction)"""
+        # Intentionally create unstable scenario with large timestep
+        response = test_client.post("/api/v1/vms/unstable_test/validate/stability")
+        result = response.json()
+        assert result["stability"] == "unstable"
+        assert "recommended_action" in result
+        assert "reduce timestep" in result["recommended_action"].lower()
+
+class TestDeviationDetection:
+    """Test model deviation from expected behavior."""
+    
+    def test_validate_against_reference_data(self, test_client):
+        """POST /api/v1/vms/{vm_id}/validate/deviation"""
+        response = test_client.post("/api/v1/vms/ecoli_001/validate/deviation", json={
+            "reference_data": {
+                "timestamps": [0, 300, 600, 900],
+                "atp": [100, 95, 105, 98]
+            },
+            "tolerance_percent": 10.0
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "deviation_detected" in result
+        assert "max_deviation_percent" in result
+        assert "rmse" in result
+    
+    def test_flag_anomalous_transients(self, test_client):
+        """POST /api/v1/vms/{vm_id}/validate/transients"""
+        response = test_client.post("/api/v1/vms/ecoli_001/validate/transients", json={
+            "metabolite": "ATP",
+            "detection_method": "wavelet",
+            "sensitivity": 0.05
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "transients_detected" in result
+        assert isinstance(result["transient_events"], list)
+
+class TestSimulationQuality:
+    """Test overall simulation quality metrics."""
+    
+    def test_get_quality_score(self, test_client):
+        """GET /api/v1/vms/{vm_id}/validate/quality"""
+        response = test_client.get("/api/v1/vms/ecoli_001/validate/quality")
+        assert response.status_code == 200
+        result = response.json()
+        assert "overall_score" in result  # 0.0-1.0
+        assert "oscillation_accuracy" in result
+        assert "stability_score" in result
+        assert "noise_level" in result
+```
+
+---
+
+### Module 4: `test_parameter_tuning.py`
+**Purpose:** Parameter adjustment suggestions (Phase 3 feature)
+
+```python
+class TestRateConstantTuning:
+    """Test rate constant adjustment suggestions."""
+    
+    def test_suggest_rate_adjustment_for_period(self, test_client):
+        """POST /api/v1/vms/{vm_id}/tune/rate-constants"""
+        response = test_client.post("/api/v1/vms/yeast_001/tune/rate-constants", json={
+            "target_metric": "oscillation_period",
+            "current_period_hours": 26.5,
+            "target_period_hours": 24.0,
+            "genes_involved": ["clock_gene_1", "clock_gene_2"]
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "suggested_adjustments" in result
+        assert len(result["suggested_adjustments"]) > 0
+        for adjustment in result["suggested_adjustments"]:
+            assert "parameter_name" in adjustment
+            assert "current_value" in adjustment
+            assert "suggested_value" in adjustment
+            assert "confidence" in adjustment
+    
+    def test_suggest_metabolic_rate_tuning(self, test_client):
+        """Tune metabolic flux rates"""
+        response = test_client.post("/api/v1/vms/ecoli_001/tune/metabolic-rates", json={
+            "pathway": "glycolysis",
+            "target_flux": 10.0,
+            "current_flux": 8.5
+        })
+        assert response.status_code == 200
+
+class TestTimestepTuning:
+    """Test timestep adjustment for stability."""
+    
+    def test_suggest_timestep_reduction(self, test_client):
+        """POST /api/v1/vms/{vm_id}/tune/timestep"""
+        response = test_client.post("/api/v1/vms/unstable_001/tune/timestep", json={
+            "current_timestep": 1.0,
+            "stability_analysis": {"stability": "unstable"}
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "recommended_timestep" in result
+        assert result["recommended_timestep"] < 1.0
+        assert "reason" in result
+
+class TestDampingTuning:
+    """Test damping coefficient adjustments."""
+    
+    def test_suggest_damping_increase(self, test_client):
+        """POST /api/v1/vms/{vm_id}/tune/damping"""
+        response = test_client.post("/api/v1/vms/oscillatory_001/tune/damping", json={
+            "current_damping_ratio": 0.05,
+            "target_damping_ratio": 0.3
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "recommended_damping_coefficient" in result
+
+class TestInitialConditionTuning:
+    """Test initial condition optimization."""
+    
+    def test_optimize_initial_metabolite_levels(self, test_client):
+        """POST /api/v1/vms/{vm_id}/tune/initial-conditions"""
+        response = test_client.post("/api/v1/vms/ecoli_001/tune/initial-conditions", json={
+            "metabolites": ["ATP", "glucose"],
+            "optimization_target": "minimize_rmse",
+            "reference_trajectory": {
+                "timestamps": [0, 300, 600],
+                "atp": [100, 95, 105]
+            }
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "optimized_initial_conditions" in result
+
+class TestAutomatedParameterSweep:
+    """Test automated parameter space exploration."""
+    
+    def test_run_parameter_sweep(self, test_client):
+        """POST /api/v1/vms/{vm_id}/tune/sweep"""
+        response = test_client.post("/api/v1/vms/ecoli_001/tune/sweep", json={
+            "parameters": [
+                {"name": "k_glycolysis", "min": 0.1, "max": 10.0, "steps": 20},
+                {"name": "k_respiration", "min": 0.1, "max": 5.0, "steps": 10}
+            ],
+            "optimization_metric": "oscillation_period_match",
+            "target_period": 24.0
+        })
+        assert response.status_code == 202  # Async
+        assert "sweep_id" in response.json()
+```
+
+---
+
+### Module 5: `test_four_lens_analysis.py`
+**Purpose:** Four-lens frequency domain analysis APIs
+
+```python
+class TestFourierAnalysis:
+    """Test Fourier analysis endpoint."""
+    
+    def test_analyze_circadian_rhythm(self, test_client):
+        """POST /api/v1/analysis/fourier"""
+        # Get metabolic history first
+        history = test_client.get("/api/v1/vms/yeast_001/history").json()
+        
+        response = test_client.post("/api/v1/analysis/fourier", json={
+            "signal": history["atp"],
+            "timestamps": history["timestamps"],
+            "detect_harmonics": True,
+            "significance_threshold": 0.05
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "dominant_period" in result
+        assert "dominant_frequency" in result
+        assert "harmonics" in result
+        assert "power_spectrum" in result
+    
+    def test_lomb_scargle_irregular_sampling(self, test_client):
+        """Test Lomb-Scargle for irregular sampling"""
+        response = test_client.post("/api/v1/analysis/fourier", json={
+            "signal": [100, 95, 105, 98, 102],
+            "timestamps": [0, 250, 600, 1000, 1500],  # Irregular
+            "method": "lomb_scargle"
+        })
+        assert response.status_code == 200
+
+class TestWaveletAnalysis:
+    """Test wavelet analysis endpoint."""
+    
+    def test_detect_transient_events(self, test_client):
+        """POST /api/v1/analysis/wavelet"""
+        history = test_client.get("/api/v1/vms/ecoli_001/history").json()
+        
+        response = test_client.post("/api/v1/analysis/wavelet", json={
+            "signal": history["atp"],
+            "dt": 5.0,
+            "wavelet": "morlet",
+            "detect_transients": True
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "scalogram" in result
+        assert "transient_events" in result
+        assert "time_frequency_features" in result
+    
+    def test_hardware_accelerated_wavelet(self, test_client):
+        """Test with hardware acceleration (if available)"""
+        response = test_client.post("/api/v1/analysis/wavelet", json={
+            "signal": [100] * 10000,  # Large dataset
+            "dt": 1.0,
+            "backend": "fpga"  # Request FPGA acceleration
+        })
+        # Should succeed with FPGA or fall back to CPU
+        assert response.status_code == 200
+
+class TestLaplaceAnalysis:
+    """Test Laplace transform stability analysis."""
+    
+    def test_assess_system_stability(self, test_client):
+        """POST /api/v1/analysis/laplace"""
+        history = test_client.get("/api/v1/vms/ecoli_001/history").json()
+        
+        response = test_client.post("/api/v1/analysis/laplace", json={
+            "signal": history["atp"],
+            "dt": 5.0,
+            "compute_poles": True
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "stability" in result
+        assert result["stability"] in ["stable", "unstable", "marginally_stable", "oscillatory"]
+        assert "dominant_poles" in result
+        assert "damping_ratio" in result
+
+class TestZTransformAnalysis:
+    """Test Z-transform filtering."""
+    
+    def test_apply_noise_filter(self, test_client):
+        """POST /api/v1/analysis/ztransform"""
+        history = test_client.get("/api/v1/vms/ecoli_001/history").json()
+        
+        response = test_client.post("/api/v1/analysis/ztransform", json={
+            "signal": history["atp"],
+            "dt": 5.0,
+            "filter_type": "lowpass",
+            "cutoff_frequency": 0.01
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "filtered_signal" in result
+        assert "frequency_response" in result
+        assert "noise_reduction_percent" in result
+
+class TestMultiLensComparison:
+    """Test combined multi-lens analysis."""
+    
+    def test_compare_all_four_lenses(self, test_client):
+        """POST /api/v1/analysis/multi-lens"""
+        history = test_client.get("/api/v1/vms/yeast_001/history").json()
+        
+        response = test_client.post("/api/v1/analysis/multi-lens", json={
+            "signal": history["atp"],
+            "timestamps": history["timestamps"],
+            "dt": 5.0,
+            "lenses": ["fourier", "wavelet", "laplace", "ztransform"]
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "fourier_result" in result
+        assert "wavelet_result" in result
+        assert "laplace_result" in result
+        assert "ztransform_result" in result
+        assert "consensus_findings" in result
+```
+
+---
+
+### Module 6: `test_performance_monitoring.py`
+**Purpose:** Profiler, real-time monitoring, alerts
+
+```python
+class TestProfilerStreaming:
+    """Test profiler data streaming."""
+    
+    def test_start_profiler(self, test_client):
+        """POST /api/v1/vms/{vm_id}/profiler/start"""
+        response = test_client.post("/api/v1/vms/ecoli_001/profiler/start", json={
+            "monitoring_interval": 5.0,
+            "validation_interval": 60.0,
+            "track_metrics": ["atp", "glucose", "cpu_usage"]
+        })
+        assert response.status_code == 200
+        assert response.json()["profiler_status"] == "running"
+    
+    def test_get_profiler_data(self, test_client):
+        """GET /api/v1/vms/{vm_id}/profiler/data"""
+        response = test_client.get("/api/v1/vms/ecoli_001/profiler/data")
+        assert response.status_code == 200
+        data = response.json()
+        assert "timestamps" in data
+        assert "metrics" in data
+    
+    def test_stop_profiler(self, test_client):
+        """POST /api/v1/vms/{vm_id}/profiler/stop"""
+        response = test_client.post("/api/v1/vms/ecoli_001/profiler/stop")
+        assert response.status_code == 200
+
+class TestValidationAlerts:
+    """Test real-time validation alerts."""
+    
+    def test_configure_alert_rules(self, test_client):
+        """POST /api/v1/vms/{vm_id}/alerts/configure"""
+        response = test_client.post("/api/v1/vms/ecoli_001/alerts/configure", json={
+            "rules": [
+                {
+                    "name": "period_drift",
+                    "condition": "oscillation_period_deviation > 2.0",
+                    "severity": "warning"
+                },
+                {
+                    "name": "instability",
+                    "condition": "stability == 'unstable'",
+                    "severity": "critical"
+                }
+            ]
+        })
+        assert response.status_code == 200
+    
+    def test_get_active_alerts(self, test_client):
+        """GET /api/v1/vms/{vm_id}/alerts"""
+        response = test_client.get("/api/v1/vms/ecoli_001/alerts")
+        assert response.status_code == 200
+        alerts = response.json()
+        assert isinstance(alerts, list)
+        for alert in alerts:
+            assert "alert_id" in alert
+            assert "rule_name" in alert
+            assert "severity" in alert
+            assert "timestamp" in alert
+
+class TestValidationHistory:
+    """Test historical validation results."""
+    
+    def test_get_validation_history(self, test_client):
+        """GET /api/v1/vms/{vm_id}/validation/history"""
+        response = test_client.get("/api/v1/vms/ecoli_001/validation/history")
+        assert response.status_code == 200
+        history = response.json()
+        assert isinstance(history, list)
+        for entry in history:
+            assert "timestamp" in entry
+            assert "validation_type" in entry
+            assert "result" in entry
+    
+    def test_get_validation_trends(self, test_client):
+        """GET /api/v1/vms/{vm_id}/validation/trends"""
+        response = test_client.get("/api/v1/vms/ecoli_001/validation/trends", params={
+            "metric": "oscillation_period",
+            "window_hours": 24
+        })
+        assert response.status_code == 200
+        trends = response.json()
+        assert "timestamps" in trends
+        assert "values" in trends
+
+class TestBenchmarking:
+    """Test analysis overhead benchmarking."""
+    
+    def test_benchmark_validation_overhead(self, test_client):
+        """POST /api/v1/benchmark/validation"""
+        response = test_client.post("/api/v1/benchmark/validation", json={
+            "vm_id": "ecoli_001",
+            "validation_types": ["oscillation", "stability", "deviation"],
+            "iterations": 10
+        })
+        assert response.status_code == 200
+        result = response.json()
+        assert "average_latency_ms" in result
+        assert "overhead_percent" in result
+```
+
+---
+
+## 🎯 Test Coverage Goals
+
+| API Category | Test Count | Coverage Target |
+|-------------|-----------|-----------------|
+| VM Lifecycle | 15 tests | 100% endpoint coverage |
+| Continuous Simulation | 10 tests | 90% feature coverage |
+| Model Validation | 20 tests | 100% validation types |
+| Parameter Tuning | 15 tests | 90% tuning strategies |
+| Four-Lens Analysis | 25 tests | 100% lens coverage |
+| Performance Monitoring | 15 tests | 90% profiler features |
+| **Total** | **100 tests** | **95% overall** |
+
+---
+
+## 🚀 How Would We Run These Tests?
+
+```bash
+# Install dependencies (future)
+pip install -r wishful-client-tests/requirements-test.txt
+
+# Run all wishful tests
+pytest wishful-client-tests/ -v
+
+# Run specific categories
+pytest wishful-client-tests/test_vm_lifecycle.py -v
+pytest wishful-client-tests/test_model_validation.py -v
+
+# Run with markers (when implemented)
+pytest -m "validation"  # Only validation tests
+pytest -m "phase3"      # Only Phase 3 features
+pytest -m "integration" # Full workflow tests
+```
+
+---
+
+## 📊 Test Fixtures We Would Need
+
+```python
+# conftest.py
+
+@pytest.fixture
+def test_client():
+    """FastAPI TestClient for BioXen REST API"""
+    from fastapi.testclient import TestClient
+    from bioxen_api.server import app
+    return TestClient(app)
+
+@pytest.fixture
+def sample_ecoli_vm(test_client):
+    """Create sample E. coli VM for testing"""
+    response = test_client.post("/api/v1/vms", json={
+        "vm_id": "test_ecoli",
+        "biological_type": "ecoli",
+        "vm_type": "basic"
+    })
+    yield response.json()
+    # Cleanup
+    test_client.delete("/api/v1/vms/test_ecoli")
+
+@pytest.fixture
+def sample_metabolic_data():
+    """Generate realistic metabolic time-series"""
+    import numpy as np
+    t = np.linspace(0, 48*3600, 5000)  # 48 hours
+    # Circadian rhythm + noise
+    atp = 100 + 20 * np.sin(2*np.pi*t/(24*3600)) + np.random.normal(0, 5, len(t))
+    return {"timestamps": t.tolist(), "atp": atp.tolist()}
+
+@pytest.fixture
+def reference_circadian_data():
+    """Expected circadian dynamics for validation"""
+    return {
+        "expected_period_hours": 24.0,
+        "expected_amplitude": 20.0,
+        "tolerance_hours": 2.0
+    }
+```
+
+---
+
+## 🔮 Why "Wishful Thinking"?
+
+These tests define the **ideal API surface** for BioXen's model validation platform. They represent:
+
+1. **Phase 2 Goals:** Continuous simulation, metabolic history
+2. **Phase 3 Goals:** Model validation, parameter tuning
+3. **Phase 4 Goals:** Performance profiling, benchmarking
+4. **Integration:** Four-lens analysis tied to biological VMs
+
+**Current Reality:**
+- ❌ No REST API server yet
+- ❌ VMs don't run continuous simulations
+- ❌ No validation endpoints
+- ❌ No parameter tuning suggestions
+
+**Future Implementation:**
+- ✅ These tests define the contract for future APIs
+- ✅ TDD approach: write tests first, then implement
+- ✅ Mirrors `client-tests/` structure for PyCWT-mod
+- ✅ Provides clear specification for API design
+
+---
+
+## 📚 References
+
+- **PyCWT-mod tests:** `client-tests/` (hardware acceleration testing)
+- **Current status:** `IMPLEMENTATION_STATUS.md`
+- **Roadmap:** `docs/DEVELOPMENT_ROADMAP.md` (Phases 1-6)
+- **Reframing:** `REFRAMING_COMPLETE.md` (model validation approach)
+- **Execution model:** `fourier-execution-model.md`
+
+---
+
+## ✅ When Would We Actually Implement This?
+
+**Phase 5-6:** If Phase 4 benchmarking shows we need remote computation:
+1. Build FastAPI REST server for BioXen
+2. Implement endpoints defined in these tests
+3. Run this test suite using TDD
+4. Achieve 95%+ coverage before production
+
+**For Now:** This is aspirational documentation defining ideal future state.
