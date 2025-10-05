@@ -1,6 +1,6 @@
 # PyCWT REST API Specification
 
-**Version:** 0.1.0-alpha  
+**Version:** 1.0.0  
 **Base URL:** `http://localhost:8000`  
 **Protocol:** HTTP/HTTPS  
 **Content-Type:** `application/json`
@@ -51,7 +51,7 @@ Get API information and available endpoints.
 ```json
 {
   "name": "PyCWT REST API",
-  "version": "0.1.0-alpha",
+  "version": "1.0.0",
   "docs": "/docs",
   "health": "/health"
 }
@@ -76,7 +76,7 @@ Check API server health status.
 ```json
 {
   "status": "healthy",
-  "api_version": "0.1.0-alpha"
+  "api_version": "1.0.0"
 }
 ```
 
@@ -93,9 +93,98 @@ curl http://localhost:8000/health
 
 ---
 
+## Hardware Detection
+
+### 3. Detect Hardware
+
+**GET** `/api/v1/hardware/detect`
+
+Detect available hardware resources for wavelet computation.
+
+#### Response
+
+```json
+{
+  "cpu": {
+    "available": true,
+    "cores": 8,
+    "model": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz"
+  },
+  "gpu": {
+    "available": true,
+    "count": 1,
+    "devices": ["NVIDIA GeForce RTX 3080"]
+  },
+  "fpga": {
+    "available": true,
+    "devices": [
+      {
+        "port": "/dev/ttyUSB0",
+        "vid": "0x1A86",
+        "pid": "0x55D4",
+        "description": "Tang Nano 9K FPGA"
+      }
+    ]
+  },
+  "embedded": {
+    "available": true,
+    "devices": [
+      {
+        "port": "/dev/ttyUSB1",
+        "vid": "0x1A86",
+        "pid": "0x7523",
+        "description": "CH340 serial converter"
+      }
+    ]
+  }
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cpu.available` | boolean | CPU availability |
+| `cpu.cores` | integer | Number of CPU cores |
+| `cpu.model` | string | CPU model name |
+| `gpu.available` | boolean | GPU availability (requires CUDA/cupy) |
+| `gpu.count` | integer | Number of GPU devices |
+| `gpu.devices` | array[string] | GPU device names |
+| `fpga.available` | boolean | FPGA device availability |
+| `fpga.devices` | array[object] | FPGA device details |
+| `embedded.available` | boolean | Embedded device availability |
+| `embedded.devices` | array[object] | Embedded device details |
+
+#### cURL Example
+
+```bash
+curl http://localhost:8000/api/v1/hardware/detect
+```
+
+#### Python Example
+
+```python
+import requests
+
+response = requests.get("http://localhost:8000/api/v1/hardware/detect")
+hardware = response.json()
+
+if hardware["fpga"]["available"]:
+    print(f"✓ FPGA available: {len(hardware['fpga']['devices'])} device(s)")
+    for device in hardware["fpga"]["devices"]:
+        print(f"  - {device['description']} on {device['port']}")
+
+if hardware["gpu"]["available"]:
+    print(f"✓ GPU available: {hardware['gpu']['count']} device(s)")
+    for gpu in hardware["gpu"]["devices"]:
+        print(f"  - {gpu}")
+```
+
+---
+
 ## Backend Management
 
-### 3. List Available Backends
+### 4. List Available Backends
 
 **GET** `/api/v1/backends/`
 
@@ -154,7 +243,7 @@ for backend in backends["backends"]:
 
 ---
 
-### 4. Get Backend Information
+### 5. Get Backend Information
 
 **GET** `/api/v1/backends/{backend_name}`
 
@@ -214,9 +303,128 @@ else:
 
 ---
 
+## Performance Benchmarking
+
+### 6. Backend Benchmark
+
+**POST** `/api/v1/benchmark`
+
+Benchmark wavelet computation performance across different backends.
+
+#### Request Body
+
+```json
+{
+  "signal_length": 1000,
+  "mc_count": 100,
+  "backends": ["sequential", "joblib", "elm11"]
+}
+```
+
+#### Request Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `signal_length` | integer | No | 1000 | Test signal length (100-10000) |
+| `mc_count` | integer | No | 100 | Monte Carlo iterations (10-1000) |
+| `backends` | array[string] | No | ["sequential"] | Backends to benchmark |
+
+#### Response
+
+```json
+{
+  "signal_length": 1000,
+  "mc_count": 100,
+  "results": [
+    {
+      "backend": "sequential",
+      "status": "completed",
+      "computation_time": 5.234,
+      "speedup": 1.0
+    },
+    {
+      "backend": "joblib",
+      "status": "completed",
+      "computation_time": 1.456,
+      "speedup": 3.59
+    },
+    {
+      "backend": "elm11",
+      "status": "completed",
+      "computation_time": 2.123,
+      "speedup": 2.47
+    },
+    {
+      "backend": "nonexistent",
+      "status": "failed",
+      "error": "Backend not available"
+    }
+  ],
+  "fastest_backend": "joblib",
+  "test_parameters": {
+    "signal_length": 1000,
+    "dt": 0.25,
+    "mother": "morlet"
+  }
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `signal_length` | integer | Test signal length used |
+| `mc_count` | integer | Monte Carlo iterations used |
+| `results` | array[object] | Benchmark results per backend |
+| `results[].backend` | string | Backend name |
+| `results[].status` | string | "completed", "failed", or "unavailable" |
+| `results[].computation_time` | float | Execution time in seconds |
+| `results[].speedup` | float | Speedup vs sequential backend |
+| `results[].error` | string | Error message (if failed) |
+| `fastest_backend` | string | Name of fastest backend |
+| `test_parameters` | object | Test configuration details |
+
+#### cURL Example
+
+```bash
+curl -X POST http://localhost:8000/api/v1/benchmark \
+  -H "Content-Type: application/json" \
+  -d '{
+    "signal_length": 1000,
+    "mc_count": 100,
+    "backends": ["sequential", "joblib", "elm11"]
+  }'
+```
+
+#### Python Example
+
+```python
+import requests
+
+# Benchmark all backends
+response = requests.post(
+    "http://localhost:8000/api/v1/benchmark",
+    json={
+        "signal_length": 2000,
+        "mc_count": 200,
+        "backends": ["sequential", "joblib", "elm11"]
+    }
+)
+
+result = response.json()
+print(f"Fastest backend: {result['fastest_backend']}")
+
+for backend_result in result["results"]:
+    if backend_result["status"] == "completed":
+        print(f"{backend_result['backend']}: {backend_result['computation_time']:.2f}s "
+              f"(speedup: {backend_result['speedup']:.2f}x)")
+```
+
+---
+
 ## Wavelet Analysis Endpoints
 
-### 5. Continuous Wavelet Transform (CWT)
+### 7. Continuous Wavelet Transform (CWT)
 
 **POST** `/api/v1/wavelet/cwt`
 
@@ -275,11 +483,11 @@ curl -X POST http://localhost:8000/api/v1/wavelet/cwt \
 
 ---
 
-### 6. Wavelet Coherence (WCT)
+### 8. Wavelet Coherence (WCT)
 
 **POST** `/api/v1/wavelet/wct`
 
-Calculate wavelet coherence between two time series.
+Calculate wavelet coherence between two time series with optional significance testing.
 
 #### Request Body
 
@@ -291,8 +499,9 @@ Calculate wavelet coherence between two time series.
   "dj": 0.125,
   "s0": -1,
   "J": -1,
+  "sig": true,
   "significance_level": 0.95,
-  "mc_count": 300,
+  "mc_count": 30,
   "backend": "elm11"
 }
 ```
@@ -301,14 +510,15 @@ Calculate wavelet coherence between two time series.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `signal1` | array[float] | Yes | - | First time series |
-| `signal2` | array[float] | Yes | - | Second time series |
+| `signal1` | array[float] | Yes | - | First time series (minimum 200 points recommended) |
+| `signal2` | array[float] | Yes | - | Second time series (minimum 200 points recommended) |
 | `dt` | float | Yes | - | Time step |
 | `dj` | float | No | 0.25 | Scale resolution |
-| `s0` | float | No | -1 | Smallest scale |
-| `J` | int | No | -1 | Number of scales |
-| `significance_level` | float | No | 0.95 | Significance level (0-1) |
-| `mc_count` | int | No | 300 | Monte Carlo simulations |
+| `s0` | float | No | -1 | Smallest scale (auto if -1) |
+| `J` | int | No | -1 | Number of scales (auto if -1) |
+| `sig` | boolean | No | false | Compute significance testing |
+| `significance_level` | float | No | null | Significance level (0-1), enables significance if set |
+| `mc_count` | int | No | 30 | Monte Carlo simulations (higher = more accurate but slower) |
 | `backend` | string | No | "sequential" | Backend: `sequential`, `joblib`, `elm11` |
 
 #### Response
@@ -325,25 +535,47 @@ Calculate wavelet coherence between two time series.
 }
 ```
 
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `WCT` | array[array[float]] | Wavelet coherence matrix |
+| `aWCT` | array[array[float]] | Phase angle matrix (radians) |
+| `coi` | array[float] | Cone of influence boundary |
+| `freqs` | array[float] | Frequency values |
+| `signif` | array[array[float]] | Significance matrix (only if sig=true or significance_level set) |
+| `backend_used` | string | Backend used for computation |
+| `computation_time` | float | Execution time in seconds |
+
+#### Performance Notes
+
+⚠️ **Significance Testing:** Computing significance with Monte Carlo simulations can be slow (30+ seconds for `mc_count >= 100`). For faster results:
+- Set `sig=false` (default) to skip significance testing
+- Use `mc_count=30` or lower for quick approximations
+- Use FPGA backend (`elm11`) for hardware acceleration
+- Consider async/background processing for large datasets
+
+⚠️ **Signal Length Requirements:** Signals shorter than 200 points may fail with "Series too short" errors due to autocorrelation requirements. Use longer signals or adjust wavelet parameters.
+
 #### Python Example
 
 ```python
 import requests
 import numpy as np
 
-# Generate sample data
-t = np.linspace(0, 10, 100)
+# Generate sample data (use 1000+ points for best results)
+t = np.linspace(0, 10, 1000)
 signal1 = np.sin(2 * np.pi * t)
 signal2 = np.sin(2 * np.pi * t + np.pi/4)
 
-# Request wavelet coherence with FPGA acceleration
+# Request wavelet coherence WITHOUT significance testing (fast)
 response = requests.post(
     "http://localhost:8000/api/v1/wavelet/wct",
     json={
         "signal1": signal1.tolist(),
         "signal2": signal2.tolist(),
-        "dt": 0.1,
-        "mc_count": 500,
+        "dt": 0.01,
+        "sig": False,  # Skip significance testing for speed
         "backend": "elm11"  # Use Tang Nano 9K FPGA
     }
 )
@@ -351,11 +583,28 @@ response = requests.post(
 result = response.json()
 print(f"Backend used: {result['backend_used']}")
 print(f"Computation time: {result['computation_time']:.2f}s")
+
+# Request WITH significance testing (slower)
+response_sig = requests.post(
+    "http://localhost:8000/api/v1/wavelet/wct",
+    json={
+        "signal1": signal1.tolist(),
+        "signal2": signal2.tolist(),
+        "dt": 0.01,
+        "sig": True,
+        "mc_count": 30,  # Low count for speed
+        "significance_level": 0.95,
+        "backend": "elm11"
+    }
+)
+
+result_sig = response_sig.json()
+print(f"With significance - Time: {result_sig['computation_time']:.2f}s")
 ```
 
 ---
 
-### 7. Cross-Wavelet Transform (XWT)
+### 9. Cross-Wavelet Transform (XWT)
 
 **POST** `/api/v1/wavelet/xwt`
 
@@ -365,29 +614,99 @@ Calculate cross-wavelet transform between two time series.
 
 ```json
 {
-  "signal1": [1.2, 3.4, 2.1],
-  "signal2": [2.1, 3.2, 2.8],
+  "signal1": [1.2, 3.4, 2.1, 4.5],
+  "signal2": [2.1, 3.2, 2.8, 4.1],
   "dt": 0.1,
-  "dj": 0.125
+  "dj": 0.125,
+  "s0": -1,
+  "J": -1,
+  "mother": "morlet",
+  "param": -1
 }
 ```
+
+#### Request Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `signal1` | array[float] | Yes | - | First time series (minimum 200 points recommended) |
+| `signal2` | array[float] | Yes | - | Second time series (minimum 200 points recommended) |
+| `dt` | float | Yes | - | Time step |
+| `dj` | float | No | 0.25 | Scale resolution |
+| `s0` | float | No | -1 | Smallest scale (auto if -1) |
+| `J` | int | No | -1 | Number of scales (auto if -1) |
+| `mother` | string | No | "morlet" | Mother wavelet type |
+| `param` | float | No | -1 | Wavelet parameter (auto if -1) |
 
 #### Response
 
 ```json
 {
-  "xwt": [[cross_wavelet_values]],
-  "phase": [[phase_angles]],
+  "amplitude": [[amplitude_matrix]],
+  "phase": [[phase_matrix]],
   "coi": [cone_of_influence],
   "freqs": [frequencies]
 }
 ```
 
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `amplitude` | array[array[float]] | Cross-wavelet amplitude matrix |
+| `phase` | array[array[float]] | Phase angle matrix (radians) |
+| `coi` | array[float] | Cone of influence boundary |
+| `freqs` | array[float] | Frequency values |
+
+#### cURL Example
+
+```bash
+curl -X POST http://localhost:8000/api/v1/wavelet/xwt \
+  -H "Content-Type: application/json" \
+  -d '{
+    "signal1": [1.0, 2.0, 1.5, 3.0, 2.5],
+    "signal2": [1.5, 2.5, 2.0, 3.5, 3.0],
+    "dt": 0.1
+  }'
+```
+
+#### Python Example
+
+```python
+import requests
+import numpy as np
+
+# Generate test signals (use 1000+ points for best results)
+t = np.linspace(0, 10, 1000)
+signal1 = np.sin(2 * np.pi * t)
+signal2 = np.cos(2 * np.pi * t)
+
+response = requests.post(
+    "http://localhost:8000/api/v1/wavelet/xwt",
+    json={
+        "signal1": signal1.tolist(),
+        "signal2": signal2.tolist(),
+        "dt": 0.01,
+        "mother": "morlet"
+    }
+)
+
+result = response.json()
+amplitude = np.array(result["amplitude"])
+phase = np.array(result["phase"])
+print(f"Amplitude shape: {amplitude.shape}")
+print(f"Phase shape: {phase.shape}")
+```
+
+#### Performance Notes
+
+⚠️ **Signal Length Requirements:** Signals shorter than 200 points may fail with "Series too short" errors. Use longer signals or adjust wavelet parameters (`s0`, `J`, `dj`).
+
 ---
 
 ## Batch Processing
 
-### 8. Submit Batch Job
+### 10. Submit Batch Job
 
 **POST** `/api/v1/jobs/batch`
 
@@ -427,7 +746,7 @@ Submit multiple wavelet analysis tasks for batch processing.
 
 ---
 
-### 9. Check Job Status
+### 11. Check Job Status
 
 **GET** `/api/v1/jobs/{job_id}`
 
@@ -760,15 +1079,85 @@ For production deployment:
 
 ## Changelog
 
-### Version 0.1.0-alpha (Current)
+### Version 1.0.0 (Current)
 
-- ✅ Backend management endpoints
+**Released:** 2025-01-XX
+
+#### New Features
+- ✅ **Hardware Detection Endpoint** (`/api/v1/hardware/detect`)
+  - Automatic detection of CPU, GPU, FPGA, and embedded devices
+  - Detailed hardware specifications and port information
+  - Support for Tang Nano 9K FPGA detection
+
+- ✅ **Performance Benchmarking** (`/api/v1/benchmark`)
+  - Compare backend performance with configurable test parameters
+  - Automatic speedup calculations
+  - Support for multiple backend comparisons in single request
+
+- ✅ **Enhanced Wavelet Analysis**
+  - CWT: Continuous Wavelet Transform with full parameter control
+  - WCT: Wavelet Coherence with optional significance testing
+  - XWT: Cross-Wavelet Transform with amplitude/phase outputs
+  - All endpoints support multiple mother wavelet types
+
+- ✅ **Backend Management**
+  - List available backends with status
+  - Get detailed backend information
+  - Backend type field shows implementation class
+
+- ✅ **Interactive Documentation**
+  - Swagger UI at `/docs`
+  - ReDoc alternative at `/redoc`
+  - Comprehensive API examples
+
+#### API Changes
+- **WCT Endpoint Updates:**
+  - Added `sig` parameter (default: `false`) to control significance testing
+  - Changed `mc_count` default from 300 to 30 for faster computation
+  - Changed `significance_level` default from 0.95 to `null`
+  - Significance only computed if `sig=true` OR `significance_level` is set
+
+- **XWT Endpoint Updates:**
+  - Renamed response fields: `WXamp` → `amplitude`, `WXangle` → `phase`
+  - Returns proper amplitude (absolute value) and phase (angle) of cross-wavelet
+
+- **Backend Information:**
+  - Added `type` field showing backend class name
+  - Improved error messages for unavailable backends
+
+#### Performance Improvements
+- Optimized WCT endpoint for faster computation without significance testing
+- Reduced default Monte Carlo count for better response times
+- FPGA backend support for hardware-accelerated computations
+
+#### Known Limitations
+- ⚠️ WCT significance testing with `mc_count > 100` may timeout (30+ seconds)
+- ⚠️ Signals shorter than 200 points may fail with "Series too short" error
+- ⚠️ Monte Carlo simulations are synchronous and may block on large datasets
+- 📋 Batch processing endpoints (planned for v1.1)
+- 📋 Async/background job queue (planned for v1.1)
+
+#### Bug Fixes
+- Fixed backend parameter handling in benchmark endpoint
+- Fixed XWT unpacking error (was expecting 5 values, now correctly handles 4)
+- Fixed field name mismatches in XWT response
+- Improved validation for nonexistent backends
+
+#### Test Coverage
+- 88/104 tests passing (84.6%)
+- Full coverage for: CWT, backends, hardware, benchmark, health endpoints
+- Partial coverage for: WCT (with/without significance), XWT
+
+---
+
+### Version 0.1.0-alpha
+
+**Released:** 2024-12-XX (Initial Development)
+
+- ✅ Basic backend management endpoints
 - ✅ Health check and status endpoints
-- ✅ Interactive API documentation
 - ✅ CORS support for web applications
-- 📋 Wavelet analysis endpoints (planned)
-- 📋 Batch processing (planned)
-- 📋 Job queue management (planned)
+- ✅ Initial wavelet analysis endpoints
 
 ---
 
